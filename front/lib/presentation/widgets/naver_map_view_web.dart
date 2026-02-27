@@ -33,14 +33,22 @@ Widget buildNaverMapViewImpl({
       )
       .toList();
 
+  if (kDebugMode) {
+    debugPrint(
+      '[NaverMapWeb] places=${places.length} '
+      'markers=${markers.length} '
+      'sample=${places.isNotEmpty ? '${places.first.name}(${places.first.latitude},${places.first.longitude})' : 'none'}',
+    );
+  }
+
   final map = NaverMapWeb(
     clientId: clientId,
     initialLatitude: lat,
     initialLongitude: lng,
     initialZoom: zoom.round(),
     places: places,
-    onMarkerClick: (place) => onMarkerTap?.call(place.id),
-    markerSize: Size(28, 28),
+    // onMarkerClick: (place) => onMarkerTap?.call(place.id),
+    // markerSize: Size(28, 28),
   );
   onMapReady?.call(map);
   return map;

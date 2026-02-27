@@ -8,11 +8,13 @@ import 'package:front/domain/entities/store_summary.dart';
 class StoreCard extends StatelessWidget {
   final StoreSummary store;
   final VoidCallback onTap;
+  final bool isSelected;
 
   const StoreCard({
     super.key,
     required this.store,
     required this.onTap,
+    this.isSelected = false,
   });
 
   @override
@@ -26,7 +28,10 @@ class StoreCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-          border: Border.all(color: AppColors.cardBorder),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.cardBorder,
+            width: isSelected ? 2 : 1,
+          ),
         ),
         child: Row(
           children: [

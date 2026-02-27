@@ -76,32 +76,20 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
     context.push(uri.toString());
   }
 
+  void _selectStore(StoreSummary store) {
+    setState(() {
+      _selectedStore = store;
+    });
+  }
+
   @override
   // 지도와 바텀시트를 함께 렌더링한다.
   Widget build(BuildContext context) {
-    if (kIsWeb) {
-      final webMarkers = [
-        MapMarkerData(
-          id: 'chicken-1',
-          lat: 37.5665,
-          lng: 126.9780,
-          caption: '?? ??',
-          iconUrl: _chickenMarkerIconUrl,
-        ),
-      ];
-      return Scaffold(
-        body: buildNaverMapView(
-          context: context,
-          lat: 37.5665,
-          lng: 126.9780,
-          zoom: 14,
-          markers: webMarkers,
-        ),
-      );
-    }
-
     final stores = ref.watch(nearbyStoresProvider);
     final storeItems = stores.asData?.value ?? [];
+    if (kDebugMode) {
+      debugPrint('[MapHome] storeItems=${storeItems.length}');
+    }
     final markers = storeItems
         .map(
           (store) => MapMarkerData(
@@ -242,40 +230,20 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
                           data: (items) => ListView(
                             controller: controller,
                             children: [
-                              SizedBox(
-                                height: 140,
-                                child: ListView.separated(
-                                  scrollDirection: Axis.horizontal,
-                                  itemBuilder: (context, index) {
-                                    return StoreCard(
-                                      store: items[index],
-                                      onTap: () => context.go(
-                                        '/map/store/${items[index].id}',
-                                      ),
-                                    );
-                                  },
-                                  separatorBuilder: (_, __) =>
-                                      const SizedBox(width: 12),
-                                  itemCount: items.length,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              ...items.map(
-                                (store) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: ListTile(
-                                    tileColor: AppColors.backgroundLight,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                    title: Text(store.name),
-                                    subtitle: Text(
-                                      '${store.rating} · ${store.reviewCount} 리뷰',
-                                    ),
-                                    onTap: () =>
-                                        context.go('/map/store/${store.id}'),
-                                  ),
-                                ),
+                              ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  final item = items[index];
+                                  return StoreCard(
+                                    store: item,
+                                    isSelected: _selectedStore?.id == item.id,
+                                    onTap: () => _selectStore(item),
+                                  );
+                                },
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 12),
+                                itemCount: items.length,
                               ),
                             ],
                           ),
