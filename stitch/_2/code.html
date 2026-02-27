@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="max-w-md mx-auto min-h-screen flex flex-col shadow-xl bg-background-light dark:bg-background-dark">
+<!-- TopAppBar Component -->
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
+<div class="flex items-center p-4 justify-between">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-primary/10 text-slate-900 dark:text-slate-100">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center">Write Review</h2>
+<div class="size-10"></div> <!-- Spacer for centering title -->
+</div>
+<div class="flex items-center gap-4 px-4 pb-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-16 border border-primary/20" data-alt="Crispy fried chicken pieces in a box" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAow-nYLE0k-RrRFeq2b1rj8dHJ3kHorivP0rCLZMDNgGVfJn62iJzDncCQrngIOc8SuS1392d_Gx1PUEs2FwnnHzN94pG_EbS-uJSjN5UaiE8floBee14ubSYSBOUhRL0xcvavuDIgSz0rL2OKnB5wE4rHLxuyRwtN10LQL9OESLRr5SPGG9Z7H5_juqHUoXmAYawK_ZU8w4I7QGt7c-3WWuataX0Z8aRQHBygVlbEuS7pbROAJzy3jUU6NwjeiCLwXVyw3iV2FMXm");'></div>
+<div class="flex flex-col justify-center">
+<p class="text-slate-900 dark:text-slate-100 text-base font-bold leading-normal line-clamp-1">BBQ Sinnae-dong</p>
+<p class="text-primary text-sm font-medium leading-normal line-clamp-1 uppercase tracking-wider">Golden Olive</p>
+</div>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto px-4 py-6 space-y-8">
+<section>
+<h3 class="text-lg font-bold leading-tight tracking-tight mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">analytics</span>
+                    Rate your experience
+                </h3>
+<div class="space-y-2">
+<!-- Rating Item: Crispy -->
+<div class="bg-white dark:bg-slate-800/50 p-4 rounded-xl border border-primary/5 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="font-medium">Crispy</span>
+<span class="text-primary font-bold">4.5</span>
+</div>
+<input class="w-full h-1.5 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" max="5" min="1" step="0.5" type="range" value="4.5"/>
+</div>
+<!-- Rating Item: Juicy -->
+<div class="bg-white dark:bg-slate-800/50 p-4 rounded-xl border border-primary/5 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="font-medium">Juicy</span>
+<span class="text-primary font-bold">4.0</span>
+</div>
+<input class="w-full h-1.5 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" max="5" min="1" step="0.5" type="range" value="4.0"/>
+</div>
+<!-- Rating Item: Saltiness -->
+<div class="bg-white dark:bg-slate-800/50 p-4 rounded-xl border border-primary/5 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="font-medium">Saltiness</span>
+<span class="text-primary font-bold">3.0</span>
+</div>
+<input class="w-full h-1.5 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" max="5" min="1" step="0.5" type="range" value="3.0"/>
+</div>
+<!-- Rating Item: Oil Quality -->
+<div class="bg-white dark:bg-slate-800/50 p-4 rounded-xl border border-primary/5 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="font-medium">Oil Quality</span>
+<span class="text-primary font-bold">5.0</span>
+</div>
+<input class="w-full h-1.5 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" max="5" min="1" step="0.5" type="range" value="5.0"/>
+</div>
+<!-- Rating Item: Chicken Quality -->
+<div class="bg-white dark:bg-slate-800/50 p-4 rounded-xl border border-primary/5 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="font-medium">Chicken Quality</span>
+<span class="text-primary font-bold">4.0</span>
+</div>
+<input class="w-full h-1.5 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" max="5" min="1" step="0.5" type="range" value="4.0"/>
+</div>
+<!-- Rating Item: Fry Quality -->
+<div class="bg-white dark:bg-slate-800/50 p-4 rounded-xl border border-primary/5 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="font-medium">Fry Quality</span>
+<span class="text-primary font-bold">4.5</span>
+</div>
+<input class="w-full h-1.5 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" max="5" min="1" step="0.5" type="range" value="4.5"/>
+</div>
+<!-- Rating Item: Portion -->
+<div class="bg-white dark:bg-slate-800/50 p-4 rounded-xl border border-primary/5 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="font-medium">Portion</span>
+<span class="text-primary font-bold">3.5</span>
+</div>
+<input class="w-full h-1.5 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" max="5" min="1" step="0.5" type="range" value="3.5"/>
+</div>
+<!-- Rating Item: Overall -->
+<div class="bg-primary/5 dark:bg-primary/10 p-4 rounded-xl border-2 border-primary/20 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="font-bold text-primary uppercase text-xs tracking-widest">Overall Satisfaction</span>
+<span class="text-primary font-black text-xl">4.2</span>
+</div>
+<input class="w-full h-2.5 bg-primary/30 rounded-lg appearance-none cursor-pointer accent-primary" max="5" min="1" step="0.1" type="range" value="4.2"/>
+</div>
+</div>
+</section>
+<section class="space-y-4">
+<div>
+<h3 class="text-lg font-bold leading-tight mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">rate_review</span>
+                        Your Comments
+                    </h3>
+<textarea class="w-full rounded-xl border border-primary/20 bg-white dark:bg-slate-800/50 p-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="Share your chicken journey with others..." rows="4"></textarea>
+</div>
+<div>
+<h3 class="text-lg font-bold leading-tight mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">add_a_photo</span>
+                        Add Photos
+                    </h3>
+<div class="flex gap-3 overflow-x-auto pb-2">
+<label class="shrink-0 flex flex-col items-center justify-center size-24 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-3xl">add</span>
+<span class="text-[10px] font-bold mt-1">UPLOAD</span>
+<input class="hidden" type="file"/>
+</label>
+<!-- Placeholder for existing/selected image -->
+<div class="relative shrink-0 size-24 rounded-xl overflow-hidden border border-primary/10 shadow-sm">
+<div class="absolute inset-0 bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
+<img class="w-full h-full object-cover relative z-10" data-alt="Close up of fried chicken skin" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1gg2lNpk4P7ztq-ka6X63NEEtvJmYnisFYu9Chi7uGAEtBHrhicZNgQME0s7RcWguaLLOjfYPWlEESrNqNyiSsVyDOtOwak6rYPgQdrWBcCxP45gk7tfsihBQbVTVDrnaCGzHcXzNoMDV1maltUSgsNZWwoOXfUDQAAH3kG7rISf0U6CFaDqm0QoXQJyKSnom-Fl-XuFdM5eQ94Cwil3eKr3FP6p1yGeckGWzASHTCpIqH8hZrYGskobqoFkW5-QIe_9esjn4i1AP"/>
+<button class="absolute top-1 right-1 z-20 size-6 rounded-full bg-black/50 text-white flex items-center justify-center backdrop-blur-sm">
+<span class="material-symbols-outlined text-xs">close</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="p-4 bg-background-light dark:bg-background-dark border-t border-primary/10">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2">
+                Submit Review
+                <span class="material-symbols-outlined">send</span>
+</button>
+</footer>
+</div>
+</body></html>

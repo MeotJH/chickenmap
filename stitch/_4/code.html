@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                        "kakao": "#FEE500",
+                        "naver": "#03C75A",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased transition-colors duration-300">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="text-slate-900 dark:text-slate-100 flex size-12 shrink-0 items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12 uppercase">ChickenMap</h2>
+</div>
+<div class="flex flex-col items-center justify-center px-6 pt-10 pb-8">
+<div class="@container w-full max-w-[320px]">
+<div class="aspect-square w-full rounded-full bg-primary/10 flex items-center justify-center overflow-hidden mb-8">
+<img alt="ChickenMap Character" class="object-contain rounded-full w-full h-full" src="{{DATA:IMAGE:IMAGE_9}}"/>
+</div>
+</div>
+<h1 class="text-slate-900 dark:text-slate-100 tracking-tight text-[40px] font-bold leading-tight text-center">
+                Chicken<span class="text-primary">Map</span>
+</h1>
+<p class="text-slate-600 dark:text-slate-400 text-base font-medium leading-normal mt-4 text-center max-w-[280px]">
+                로그인하고 나만의 치킨 지도를 만들어보세요!
+            </p>
+</div>
+<div class="flex flex-col items-center px-6 pb-12 w-full max-w-[480px] mx-auto gap-4">
+<button class="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl h-14 px-5 bg-kakao text-[#3c1e1e] text-base font-bold shadow-sm active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-[24px]">chat_bubble</span>
+<span class="truncate">카카오로 시작하기</span>
+</button>
+<button class="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl h-14 px-5 bg-naver text-white text-base font-bold shadow-sm active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-[24px]">square</span>
+<span class="truncate">네이버로 시작하기</span>
+</button>
+<button class="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl h-14 px-5 bg-white border border-slate-200 text-slate-900 text-base font-bold shadow-sm active:scale-[0.98] transition-transform">
+<img alt="Google Logo" class="w-6 h-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlvgs9KVhWEuxF8wgWi9gokXJ4Z_oWgtemKa39gkxBIpapSP3mZ8O9kWbHfeBqRr0V0FYxWpG69hjD6Theo09XZOiTTOcscQ3qHt9WuMZpyPMQdWvTJ43H3f23gNKAXqIOlYdB9h0cvlOuu8cn5B_z4CRPjNKfJ29Ak-Yy004TNsBhEHXMMJbp1HsR0X6S04HpfY49atr5c45FaV8T4jub-BzZT6R6po81vp8ZXKt1OO81Z77TLIB--6IN3bxgc0N872yl-lLbB0ep"/>
+<span class="truncate">Google로 시작하기</span>
+</button>
+<button class="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl h-14 px-5 bg-black text-white text-base font-bold shadow-sm active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-[24px]">ios</span>
+<span class="truncate">Apple로 로그인</span>
+</button>
+<div class="mt-6 flex flex-col items-center gap-4">
+<button class="text-slate-500 dark:text-slate-400 text-sm font-semibold underline underline-offset-4 hover:text-primary transition-colors">
+                    비회원으로 둘러보기
+                </button>
+</div>
+</div>
+<div class="flex-grow"></div>
+<div class="px-6 py-8 text-center">
+<p class="text-slate-400 dark:text-slate-500 text-xs">
+                로그인 시 ChickenMap의 <span class="underline">이용약관</span> 및 <span class="underline">개인정보처리방침</span>에 동의하게 됩니다.
+            </p>
+</div>
+</div>
+</body></html>

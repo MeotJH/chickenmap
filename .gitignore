@@ -1,0 +1,10 @@
+.idea
+back/request_curl
+
+# FVM Version Cache
+.fvm/
+
+
+
+back/.env
+front/.env

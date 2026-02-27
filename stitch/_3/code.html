@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChickenMap - Find the Best Fried Chicken</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex h-screen w-full flex-col overflow-hidden">
+<!-- Background: Interactive Map Simulation -->
+<div class="absolute inset-0 z-0 bg-slate-200 dark:bg-slate-800">
+<div class="w-full h-full bg-cover bg-center opacity-80" data-alt="Modern minimalist city map with roads and parks" data-location="Seoul, South Korea" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBM02QgvPRQYmgjLThP6Ew2bGn7krzRmhQgGdgtf1zzxzsKE3kc9vPOEcZIFvb33OUbK_c6rZKFuxUzZGN1iT5Rg3ZCt-9ABb70kyoAgEnQ2AUnqmDvCbohtdclsjNh2uXXmXvNMiznLgFFb38IBuoo0c1nOyUIXepekhd2SEVBxkSumUbjw4RLqbHaL4Y0LYRKwLCIFCI4hL3DgtLYQwNaoKQsFecQWU-vdc5jocaNI6lWfWFJzLhDjvSxYyedtGera5CvyJTKU1GQ')">
+</div>
+<!-- Custom Markers: Badges showing ratings -->
+<div class="absolute top-1/4 left-1/3 -translate-x-1/2 -translate-y-1/2">
+<div class="flex flex-col items-center">
+<div class="bg-primary text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">star</span>
+                        4.8
+                    </div>
+<div class="w-0.5 h-2 bg-primary"></div>
+</div>
+</div>
+<div class="absolute top-1/2 left-2/3 -translate-x-1/2 -translate-y-1/2">
+<div class="flex flex-col items-center">
+<div class="bg-white dark:bg-slate-800 text-primary border-2 border-primary px-3 py-1 rounded-full text-sm font-bold shadow-lg flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">star</span>
+                        4.2
+                    </div>
+<div class="w-0.5 h-2 bg-primary"></div>
+</div>
+</div>
+<div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-125 z-10">
+<div class="flex flex-col items-center">
+<div class="bg-primary text-white px-3 py-1 rounded-full text-sm font-bold shadow-xl flex items-center gap-1 border-2 border-white">
+<span class="material-symbols-outlined text-[14px]">star</span>
+                        4.5
+                    </div>
+<div class="w-0.5 h-3 bg-primary"></div>
+</div>
+</div>
+<div class="absolute bottom-1/3 left-1/4 -translate-x-1/2 -translate-y-1/2">
+<div class="flex flex-col items-center">
+<div class="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 px-3 py-1 rounded-full text-sm font-bold shadow-lg flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">star</span>
+                        3.9
+                    </div>
+<div class="w-0.5 h-2 bg-slate-400"></div>
+</div>
+</div>
+</div>
+<!-- Top Header: Search Bar -->
+<div class="relative z-20 px-4 pt-4">
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-3">
+<button class="bg-white dark:bg-background-dark p-3 rounded-xl shadow-md border border-slate-100 dark:border-slate-700">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400">menu</span>
+</button>
+<label class="flex-1 flex items-center bg-white dark:bg-background-dark rounded-xl shadow-md border border-slate-100 dark:border-slate-700 px-4 h-12">
+<span class="material-symbols-outlined text-slate-400 mr-2">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder:text-slate-400" placeholder="Search chicken stores or areas" type="text"/>
+</label>
+<button class="bg-primary p-3 rounded-xl shadow-md text-white">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+<button class="bg-primary text-white px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap shadow-sm">Open Now</button>
+<button class="bg-white dark:bg-background-dark text-slate-700 dark:text-slate-300 px-4 py-1.5 rounded-full text-sm font-medium border border-slate-200 dark:border-slate-700 whitespace-nowrap shadow-sm">Top Rated</button>
+<button class="bg-white dark:bg-background-dark text-slate-700 dark:text-slate-300 px-4 py-1.5 rounded-full text-sm font-medium border border-slate-200 dark:border-slate-700 whitespace-nowrap shadow-sm">Closest</button>
+</div>
+</div>
+</div>
+<!-- Floating Action Buttons -->
+<div class="absolute right-4 bottom-72 z-20 flex flex-col gap-3">
+<button class="bg-white dark:bg-background-dark p-3 rounded-full shadow-lg border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">my_location</span>
+</button>
+<div class="flex flex-col rounded-full bg-white dark:bg-background-dark shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
+<button class="p-3 text-slate-600 dark:text-slate-400 border-b border-slate-100 dark:border-slate-700">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="p-3 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">remove</span>
+</button>
+</div>
+</div>
+<!-- Bottom Sheet Wrapper -->
+<div class="mt-auto relative z-30">
+<!-- Draggable Bottom Sheet -->
+<div class="bg-white dark:bg-background-dark rounded-t-[2rem] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] pb-4">
+<!-- Handle -->
+<div class="flex justify-center pt-3 pb-2">
+<div class="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+</div>
+<!-- Selected Store Card -->
+<div class="px-5 py-2">
+<div class="flex gap-4 items-start">
+<!-- Store Brand Logo / Image -->
+<div class="w-24 h-24 rounded-2xl bg-primary/10 flex-shrink-0 overflow-hidden border border-primary/5">
+<img alt="Crispy golden fried chicken platter" class="w-full h-full object-cover" data-alt="Delicious golden fried chicken brand image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5cmmZoBqb8t3ZO7yn4tDph7Afg4aSTZqWCKgESnccgHJhx669Lnk9VuZBkhdZhGHM8h3QY--WdR9sSvO_Nk_o_SJTXx4o-3NZ-87FXmUmm2Hz5H2za-WdMFy8zc0sd5Brw6TNJ6g-tYzVvJ23qY4SPkDNlLO0A3J0CcCke6XgFk13uwdtzMiceUHTtgX2u2UOj6evZAG6hE_3PlvvRzyygYT9T2-XUeXuWnrRtIV3hQRb_7uSLpr74PU_-cOtzLgDmv4AHqYm3iNo"/>
+</div>
+<!-- Store Details -->
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Top Rated</span>
+<span class="text-slate-400 text-xs font-medium">0.8km away</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-xl font-bold truncate">BBQ Sinnae-dong</h2>
+<div class="flex items-center gap-1.5 mt-1">
+<div class="flex items-center text-primary">
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="text-slate-900 dark:text-slate-100 font-bold ml-1">4.5</span>
+</div>
+<span class="text-slate-400 text-sm">•</span>
+<span class="text-slate-500 dark:text-slate-400 text-sm">1,240 reviews</span>
+</div>
+<div class="flex gap-2 mt-3">
+<button class="flex-1 bg-primary text-white py-2.5 rounded-xl font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">directions</span>
+                                    Get Directions
+                                </button>
+<button class="w-12 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="mt-4 border-t border-slate-100 dark:border-slate-800 px-6 pt-4 pb-2">
+<div class="flex justify-between items-center max-w-md mx-auto">
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">trophy</span>
+<span class="text-[10px] font-medium">Ranking</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="text-[10px] font-bold">Map</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">My Activity</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

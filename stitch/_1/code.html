@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>ChickenMap - Best Chicken Rankings</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- Header -->
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl">restaurant</span>
+<h2 class="text-xl font-bold leading-tight tracking-tight">ChickenMap</h2>
+</div>
+<div class="flex items-center">
+<button class="flex items-center justify-center rounded-full w-10 h-10 bg-primary/10 text-primary">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="px-4 py-3">
+<label class="flex flex-col w-full">
+<div class="flex w-full items-stretch rounded-xl h-12 bg-slate-200/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+<div class="flex items-center justify-center pl-4 text-slate-500">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full border-none bg-transparent focus:ring-0 px-4 pl-2 text-base font-normal placeholder:text-slate-500" placeholder="Search brand or menu" value=""/>
+</div>
+</label>
+</div>
+<!-- Category Filters -->
+<div class="flex gap-3 px-4 pb-4 overflow-x-auto no-scrollbar">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary text-white px-5 shadow-sm">
+<span class="text-sm font-semibold">All</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-slate-200/80 dark:bg-slate-800 px-5 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+<span class="text-sm font-medium">Fried</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-slate-200/80 dark:bg-slate-800 px-5 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+<span class="text-sm font-medium">Seasoned</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-slate-200/80 dark:bg-slate-800 px-5 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+<span class="text-sm font-medium">Boneless</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-slate-200/80 dark:bg-slate-800 px-5 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+<span class="text-sm font-medium">Baked</span>
+</button>
+</div>
+</header>
+<!-- Content Section -->
+<main class="flex-1 px-4 space-y-6 pt-2">
+<div class="flex items-end justify-between">
+<h2 class="text-2xl font-bold leading-tight tracking-tight">Chicken Rankings</h2>
+<span class="text-sm text-primary font-semibold">Updated Today</span>
+</div>
+<!-- Ranking List -->
+<div class="space-y-4">
+<!-- Card 1 -->
+<div class="group relative flex flex-col bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-800">
+<div class="relative h-48 w-full">
+<img class="w-full h-full object-cover" data-alt="Golden fried chicken pieces on a plate" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtHrpl_kdq1gxVSLR2xSgNEmvlM4PR0EMePlGa98ORm0cYIuXKHgr5ah2fnTQw9vGrx3WUjZWbYgqF-9htTsb_TkYd6V5h8F_HEe3Ef6IdcEe4VMk09rZOesy4DUjG3KEfopa0LrjFh2KgJgV27w4zC996dMPodcIszG49jIIXE-tvc6BKRfLZDHARlrl9ayQno11dAdFFdqeGByFQHiPlw2Zy2XZucbsN0w9mDQ_rWSMMJUXmGoHj4paV1636i0m4i21dq7kSraPY"/>
+<div class="absolute top-3 left-3 bg-primary text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg">#1 Overall</div>
+<div class="absolute bottom-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-yellow-500 text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-sm font-bold">4.9</span>
+</div>
+</div>
+<div class="p-4">
+<div class="flex items-center gap-2 mb-1">
+<div class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="BBQ Chicken Brand Logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBm0bsKt3eeVGTfif4RUC_jbzMu3Q1sSDJQR_6HGfBPCmr0tm7C2x5pnZofeHeH8-BLGs5vpsvj9AbK4ly09yPDhCHAb5_bN4gvIYrbSFoKOxZSxjnB2-8DbNy_Xa6NK0FyMLwrE11wnQR1MwUePJvyIYvAYs08QfkiFCDJB4TJxB8DtL9ipETT73Nz81Xq7HlfIRsVZTb0kC-ZKxqr__93UfbFOnaXS9RBOdtssynznB4EqP7-b59OpCHyLoPBfoL-VMv3GqvZ3s4g"/>
+</div>
+<span class="text-sm font-medium text-slate-500">BBQ Chicken</span>
+</div>
+<h3 class="text-lg font-bold mb-2">Golden Olive Chicken</h3>
+<div class="flex items-center gap-4 mb-3 text-xs text-slate-500 uppercase tracking-wider font-semibold">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-sm">thumb_up</span>
+<span>Crispy 4.9</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-sm">water_drop</span>
+<span>Juicy 4.7</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+<span class="text-sm text-slate-500">2,482 Reviews</span>
+<button class="text-primary font-bold text-sm flex items-center">
+                                View Details <span class="material-symbols-outlined text-sm ml-1">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative flex flex-col bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-800">
+<div class="relative h-48 w-full">
+<img class="w-full h-full object-cover" data-alt="Red spicy seasoned chicken wings" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtS7WTy2RwhOpC0qrl1BeoOUrMj9rgj5H39CzVFDi8ldRRx7Gc26KTYB6WlEEZk3YIS96CHYZdRMAlbhU772u-maFdVSYkPx-fpPrfV0p0Mes0P4kZxqWUc57XhQWqbRHStJsH_jIiwdISti6wCm4PEha1qi3yK5ZsaTsua8wYsb7g1N8N13DFKv-ToeSwljfwyvq1sl5M6jNf9qDu6BSevE-QzGImEoHItshw6N22ROC5tO5xJqpnz_Ax99gYGyj2X6eBFYR8BgaQ"/>
+<div class="absolute top-3 left-3 bg-slate-800 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg">#2 Overall</div>
+<div class="absolute bottom-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-yellow-500 text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-sm font-bold">4.8</span>
+</div>
+</div>
+<div class="p-4">
+<div class="flex items-center gap-2 mb-1">
+<div class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="BHC Brand Logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB--TzmdRa1Qk4TLud9vdw3ttfoNDA9jvmqrRpZXMl-M0mBqUfhmK6oBUSJpnCTtUPXv7WZ2BdqhbKOiygM8XLK3yrh-Z4uSEs_32zrUiY5HiEJkV3gjrqnP4YC7PW-27BnB04EDputzwhqqZNU-DySujvbVtNEWIYiCStiqqrHAiA8PPGCO7oVlXcoWouI8GZKZxAwcKO-MkM2mtWE30IlddqmQPZ4lsrodTZns7v2g7DhxtYJtJXkb9mqdseRu_8bgJtm1GGsShUr"/>
+</div>
+<span class="text-sm font-medium text-slate-500">BHC</span>
+</div>
+<h3 class="text-lg font-bold mb-2">Bburinkle Chicken</h3>
+<div class="flex items-center gap-4 mb-3 text-xs text-slate-500 uppercase tracking-wider font-semibold">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-sm">flare</span>
+<span>Magic Powder 4.8</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-sm">sentiment_very_satisfied</span>
+<span>Flavor 4.9</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+<span class="text-sm text-slate-500">1,905 Reviews</span>
+<button class="text-primary font-bold text-sm flex items-center">
+                                View Details <span class="material-symbols-outlined text-sm ml-1">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group relative flex flex-col bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-800">
+<div class="relative h-48 w-full">
+<img class="w-full h-full object-cover" data-alt="Crispy honey soy chicken pieces" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEPxO9awoBLaA-mkeylM1DNgb8uzGHvEG4WSp8oPjNji9BLGPkwQt6s50f2wEP8bZCQ72jMQXAnUjx5sUTwbZHjMOeGvZJH62PKbMqy-CcWoJL7cWa_iUPxWxkYtOEstWgOlJIYdVNQ2ZmHdnsUaUKN7h10m3nwskKNHLODohET5TtivzS7jy9wXjktAIED7bqRn5OOEu3mQ9hfskS8t6v1OSXzXqAbufeOyhCGZiU9kPoFBpbd0ARibN4HLaKwpU1kyUx2OaSqUuT"/>
+<div class="absolute top-3 left-3 bg-slate-800 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg">#3 Overall</div>
+<div class="absolute bottom-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-yellow-500 text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-sm font-bold">4.7</span>
+</div>
+</div>
+<div class="p-4">
+<div class="flex items-center gap-2 mb-1">
+<div class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Kyochon Brand Logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUSMKs4gekdXjZzAzJqvZ9uyDG474nIQ2TK--TwGGWuig7P8a9nCjsX7BIDQaDkwrxlBjjxqpWMqGI8Dy83umlmAjIfAJMGc-TqN0Qx_st--DtzKGlukUYJKInbIpBOHLyAIZ79Ag8LFUbuEjeVP3aD51E8R0_VPDfRBDZpJ6lNUwWacrcpFAzjlQ-g-wUv_v3XbOwj7R7wGcTNyexV0Wmeri6Bjq_xzX1GffPjNc7EcSe2nfS9POGiA8lXkNQH3O78Cpj_u9Qrucq"/>
+</div>
+<span class="text-sm font-medium text-slate-500">Kyochon</span>
+</div>
+<h3 class="text-lg font-bold mb-2">Honey Combo</h3>
+<div class="flex items-center gap-4 mb-3 text-xs text-slate-500 uppercase tracking-wider font-semibold">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-sm">bakery_dining</span>
+<span>Crunchy 4.6</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-sm">add_ad</span>
+<span>Sweet 4.8</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+<span class="text-sm text-slate-500">3,120 Reviews</span>
+<button class="text-primary font-bold text-sm flex items-center">
+                                View Details <span class="material-symbols-outlined text-sm ml-1">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 z-20 border-t border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg safe-bottom">
+<div class="flex gap-2 px-4 pb-4 pt-3">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">emoji_events</span>
+<p class="text-xs font-bold leading-normal tracking-[0.015em]">Ranking</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">map</span>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Map</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">My Activity</p>
+</a>
+</div>
+</nav>
+</div>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
+</body></html>

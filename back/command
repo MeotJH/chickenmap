@@ -1,0 +1,3 @@
+1. C:/Users/kimjh0417/work_space/quantwo_bot/backend/venv/Scripts/Activate.ps1
+2. uvicorn main:app --reload
+3. serverless deploy
