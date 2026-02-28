@@ -389,15 +389,26 @@ class _NetworkImageWithFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = imageUrl.trim();
     if (!_isValidHttpUrl(url)) {
-      return _buildImageFrame(Image.asset(fallbackAssetPath, fit: fit));
+      return _buildImageFrame(
+        Image.asset(
+          fallbackAssetPath,
+          key: ValueKey('asset_$fallbackAssetPath'),
+          fit: fit,
+        ),
+      );
     }
     return _buildImageFrame(
       Image.network(
         url,
+        key: ValueKey('net_$url'),
         fit: fit,
         webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
         errorBuilder: (context, error, stackTrace) =>
-            Image.asset(fallbackAssetPath, fit: fit),
+            Image.asset(
+              fallbackAssetPath,
+              key: ValueKey('asset_$fallbackAssetPath'),
+              fit: fit,
+            ),
       ),
     );
   }

@@ -115,6 +115,9 @@ class _RankingHomePageState extends ConsumerState<RankingHomePage> {
                         final rankIndex =
                             rankIndexById[filtered[index].id] ?? index;
                         return RankingCard(
+                          key: ValueKey(
+                            '${_selectedCategory}_${filtered[index].id}_${filtered[index].imageUrl}',
+                          ),
                           ranking: filtered[index],
                           rankIndex: rankIndex,
                           onTap: () => context.push(
