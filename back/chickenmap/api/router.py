@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from chickenmap.db.session import get_db
+from chickenmap.models.entities import Menu
+from chickenmap.core.rating_dimensions import compute_overall, scores_json_loads
 from chickenmap.schemas.chickenmap import (
   BrandMenuRankingOut,
   BrandOut,
@@ -26,6 +28,18 @@ from chickenmap.services import (
 router = APIRouter(prefix="/api/chickenmap", tags=["chickenmap"])
 
 
+def _resolve_store_image_url(brand_logo_url: str | None) -> str:
+    # 브랜드 로고가 없으면 프론트 기본 이미지 폴백이 동작하도록 빈 문자열을 반환한다.
+    return (brand_logo_url or "").strip()
+
+
+def _scores_from_snapshot(
+    scores_json: str | None,
+) -> dict[str, float]:
+    # scores_json 스냅샷을 안전하게 역직렬화한다.
+    return scores_json_loads(scores_json)
+
+
 @router.get("/rankings", response_model=list[BrandMenuRankingOut])
 def list_rankings(db: Session = Depends(get_db)):
     # 브랜드-메뉴 랭킹 리스트를 반환한다.
@@ -37,17 +51,17 @@ def list_rankings(db: Session = Depends(get_db)):
             menuId=aggregate.menu_id,
             brandName=brand_name,
             menuName=menu_name,
-            category=menu.category,
+            category=menu_category,
             rating=aggregate.rating,
             reviewCount=aggregate.review_count,
             highlightScoreA=aggregate.highlight_score_a,
             highlightLabelA=aggregate.highlight_label_a,
             highlightScoreB=aggregate.highlight_score_b,
             highlightLabelB=aggregate.highlight_label_b,
-            imageUrl=aggregate.image_url,
-            brandLogoUrl=aggregate.brand_logo_url,
+            imageUrl=menu_image_url,
+            brandLogoUrl=brand_logo_url,
         )
-        for aggregate, brand_name, menu_name, menu in rows
+        for aggregate, brand_name, brand_logo_url, menu_name, menu_category, menu_image_url in rows
     ]
 
 
@@ -57,16 +71,11 @@ def get_ranking_breakdown(ranking_id: str, db: Session = Depends(get_db)):
     aggregate = brand_menu_service.get_ranking_breakdown(db, ranking_id)
     if aggregate is None:
         raise HTTPException(status_code=404, detail="Ranking not found")
+    scores = _scores_from_snapshot(aggregate.scores_json)
 
     return RatingBreakdownOut(
-        crispy=aggregate.crispy,
-        juicy=aggregate.juicy,
-        salty=aggregate.salty,
-        oil=aggregate.oil,
-        chickenQuality=aggregate.chicken_quality,
-        fryQuality=aggregate.fry_quality,
-        portion=aggregate.portion,
-        overall=aggregate.overall,
+        scores=scores,
+        overall=compute_overall(scores, fallback=aggregate.rating),
     )
 
 
@@ -80,18 +89,13 @@ def get_ranking_reviews(ranking_id: str, db: Session = Depends(get_db)):
             storeName=store_name,
             brandName=brand_name,
             menuName=menu_name,
-            crispy=review.crispy,
-            juicy=review.juicy,
-            salty=review.salty,
-            oil=review.oil,
-            chickenQuality=review.chicken_quality,
-            fryQuality=review.fry_quality,
-            portion=review.portion,
+            menuCategory=menu_category,
+            scores=_scores_from_snapshot(review.scores_json),
             overall=review.overall,
             comment=review.comment,
             createdAt=review.created_at,
         )
-        for review, store_name, brand_name, menu_name in rows
+        for review, store_name, brand_name, menu_name, menu_category in rows
     ]
 
 
@@ -108,11 +112,11 @@ def list_stores(db: Session = Depends(get_db)):
             rating=aggregate.rating,
             reviewCount=aggregate.review_count,
             distanceKm=store.distance_km,
-            imageUrl=store.image_url,
+            imageUrl=_resolve_store_image_url(brand_logo_url),
             lat=store.lat,
             lng=store.lng,
         )
-        for store, aggregate, brand_name in rows
+        for store, aggregate, brand_name, brand_logo_url in rows
     ]
 
 
@@ -122,7 +126,7 @@ def get_store_detail(store_id: str, db: Session = Depends(get_db)):
     row = store_service.get_store_detail(db, store_id)
     if row is None:
         raise HTTPException(status_code=404, detail="Store not found")
-    store, aggregate, brand_name = row
+    store, aggregate, brand_name, brand_logo_url = row
     return StoreSummaryOut(
         id=store.id,
         name=store.name,
@@ -131,7 +135,7 @@ def get_store_detail(store_id: str, db: Session = Depends(get_db)):
         rating=aggregate.rating,
         reviewCount=aggregate.review_count,
         distanceKm=store.distance_km,
-        imageUrl=store.image_url,
+        imageUrl=_resolve_store_image_url(brand_logo_url),
         lat=store.lat,
         lng=store.lng,
     )
@@ -143,16 +147,11 @@ def get_store_breakdown(store_id: str, db: Session = Depends(get_db)):
     aggregate = store_service.get_store_breakdown(db, store_id)
     if aggregate is None:
         raise HTTPException(status_code=404, detail="Store not found")
+    scores = _scores_from_snapshot(aggregate.scores_json)
 
     return RatingBreakdownOut(
-        crispy=aggregate.crispy,
-        juicy=aggregate.juicy,
-        salty=aggregate.salty,
-        oil=aggregate.oil,
-        chickenQuality=aggregate.chicken_quality,
-        fryQuality=aggregate.fry_quality,
-        portion=aggregate.portion,
-        overall=aggregate.overall,
+        scores=scores,
+        overall=compute_overall(scores, fallback=aggregate.rating),
     )
 
 
@@ -166,18 +165,13 @@ def get_store_reviews(store_id: str, db: Session = Depends(get_db)):
             storeName=store_name,
             brandName=brand_name,
             menuName=menu_name,
-            crispy=review.crispy,
-            juicy=review.juicy,
-            salty=review.salty,
-            oil=review.oil,
-            chickenQuality=review.chicken_quality,
-            fryQuality=review.fry_quality,
-            portion=review.portion,
+            menuCategory=menu_category,
+            scores=_scores_from_snapshot(review.scores_json),
             overall=review.overall,
             comment=review.comment,
             createdAt=review.created_at,
         )
-        for review, store_name, brand_name, menu_name in rows
+        for review, store_name, brand_name, menu_name, menu_category in rows
     ]
 
 
@@ -191,18 +185,13 @@ def get_my_reviews(db: Session = Depends(get_db)):
             storeName=store_name,
             brandName=brand_name,
             menuName=menu_name,
-            crispy=review.crispy,
-            juicy=review.juicy,
-            salty=review.salty,
-            oil=review.oil,
-            chickenQuality=review.chicken_quality,
-            fryQuality=review.fry_quality,
-            portion=review.portion,
+            menuCategory=menu_category,
+            scores=_scores_from_snapshot(review.scores_json),
             overall=review.overall,
             comment=review.comment,
             createdAt=review.created_at,
         )
-        for review, store_name, brand_name, menu_name in rows
+        for review, store_name, brand_name, menu_name, menu_category in rows
     ]
 
 
@@ -212,19 +201,14 @@ def get_review(review_id: str, db: Session = Depends(get_db)):
     row = review_service.get_review(db, review_id)
     if row is None:
         raise HTTPException(status_code=404, detail="Review not found")
-    review, store_name, brand_name, menu_name = row
+    review, store_name, brand_name, menu_name, menu_category = row
     return ReviewOut(
         id=review.id,
         storeName=store_name,
         brandName=brand_name,
         menuName=menu_name,
-        crispy=review.crispy,
-        juicy=review.juicy,
-        salty=review.salty,
-        oil=review.oil,
-        chickenQuality=review.chicken_quality,
-        fryQuality=review.fry_quality,
-        portion=review.portion,
+        menuCategory=menu_category,
+        scores=_scores_from_snapshot(review.scores_json),
         overall=review.overall,
         comment=review.comment,
         createdAt=review.created_at,
@@ -238,19 +222,16 @@ def create_review(payload: ReviewCreateIn, db: Session = Depends(get_db)):
         review, store_name, brand_name, menu_name = review_service.create_review(db, payload)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    menu = db.get(Menu, review.menu_id)
+    menu_category = menu.category if menu is not None else "후라이드"
 
     return ReviewOut(
         id=review.id,
         storeName=store_name,
         brandName=brand_name,
         menuName=menu_name,
-        crispy=review.crispy,
-        juicy=review.juicy,
-        salty=review.salty,
-        oil=review.oil,
-        chickenQuality=review.chicken_quality,
-        fryQuality=review.fry_quality,
-        portion=review.portion,
+        menuCategory=menu_category,
+        scores=_scores_from_snapshot(review.scores_json),
         overall=review.overall,
         comment=review.comment,
         createdAt=review.created_at,

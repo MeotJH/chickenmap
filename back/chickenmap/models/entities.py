@@ -42,7 +42,6 @@ class Store(Base):
     name: Mapped[str] = mapped_column(String(120))
     address: Mapped[str] = mapped_column(String(200))
     distance_km: Mapped[float] = mapped_column(Float)
-    image_url: Mapped[str] = mapped_column(String(1000))
     lat: Mapped[float] = mapped_column(Float, default=0.0)
     lng: Mapped[float] = mapped_column(Float, default=0.0)
 
@@ -62,16 +61,7 @@ class BrandMenuAggregate(Base):
     highlight_label_a: Mapped[str] = mapped_column(String(40))
     highlight_score_b: Mapped[float] = mapped_column(Float)
     highlight_label_b: Mapped[str] = mapped_column(String(40))
-    image_url: Mapped[str] = mapped_column(String(1000))
-    brand_logo_url: Mapped[str] = mapped_column(String(1000))
-    crispy: Mapped[float] = mapped_column(Float)
-    juicy: Mapped[float] = mapped_column(Float)
-    salty: Mapped[float] = mapped_column(Float)
-    oil: Mapped[float] = mapped_column(Float)
-    chicken_quality: Mapped[float] = mapped_column(Float)
-    fry_quality: Mapped[float] = mapped_column(Float)
-    portion: Mapped[float] = mapped_column(Float)
-    overall: Mapped[float] = mapped_column(Float)
+    scores_json: Mapped[str] = mapped_column(String, default="{}")
 
 
 class StoreAggregate(Base):
@@ -82,14 +72,8 @@ class StoreAggregate(Base):
     store_id: Mapped[str] = mapped_column(ForeignKey("store.id"), index=True)
     rating: Mapped[float] = mapped_column(Float)
     review_count: Mapped[int] = mapped_column(Integer)
-    crispy: Mapped[float] = mapped_column(Float)
-    juicy: Mapped[float] = mapped_column(Float)
-    salty: Mapped[float] = mapped_column(Float)
-    oil: Mapped[float] = mapped_column(Float)
-    chicken_quality: Mapped[float] = mapped_column(Float)
-    fry_quality: Mapped[float] = mapped_column(Float)
-    portion: Mapped[float] = mapped_column(Float)
-    overall: Mapped[float] = mapped_column(Float)
+    scores_json: Mapped[str] = mapped_column(String, default="{}")
+    counts_json: Mapped[str] = mapped_column(String, default="{}")
 
 
 class Review(Base):
@@ -100,13 +84,7 @@ class Review(Base):
     store_id: Mapped[str] = mapped_column(ForeignKey("store.id"), index=True)
     brand_id: Mapped[str] = mapped_column(ForeignKey("brand.id"), index=True)
     menu_id: Mapped[str] = mapped_column(ForeignKey("menu.id"), index=True)
-    crispy: Mapped[float] = mapped_column(Float)
-    juicy: Mapped[float] = mapped_column(Float)
-    salty: Mapped[float] = mapped_column(Float)
-    oil: Mapped[float] = mapped_column(Float)
-    chicken_quality: Mapped[float] = mapped_column(Float)
-    fry_quality: Mapped[float] = mapped_column(Float)
-    portion: Mapped[float] = mapped_column(Float)
+    scores_json: Mapped[str] = mapped_column(String, default="{}")
     overall: Mapped[float] = mapped_column(Float)
     comment: Mapped[str] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime)

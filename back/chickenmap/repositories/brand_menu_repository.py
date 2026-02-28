@@ -10,9 +10,17 @@ from chickenmap.models.entities import BrandMenuAggregate, Brand, Menu, Review, 
 def fetch_rankings(db: Session):
     # 랭킹 리스트 조회를 위한 DB 쿼리다.
     stmt = (
-        select(BrandMenuAggregate, Brand.name, Menu.name, Menu)
+        select(
+            BrandMenuAggregate,
+            Brand.name,
+            Brand.logo_url,
+            Menu.name,
+            Menu.category,
+            Menu.image_url,
+        )
         .join(Brand, Brand.id == BrandMenuAggregate.brand_id)
         .join(Menu, Menu.id == BrandMenuAggregate.menu_id)
+        .where(BrandMenuAggregate.brand_id != "brand-local")
         .order_by(BrandMenuAggregate.rating.desc())
     )
     return db.execute(stmt).all()
@@ -30,7 +38,7 @@ def fetch_ranking_reviews(db: Session, ranking_id: str):
         return []
 
     stmt = (
-        select(Review, Store.name, Brand.name, Menu.name)
+        select(Review, Store.name, Brand.name, Menu.name, Menu.category)
         .join(Store, Store.id == Review.store_id)
         .join(Brand, Brand.id == Review.brand_id)
         .join(Menu, Menu.id == Review.menu_id)

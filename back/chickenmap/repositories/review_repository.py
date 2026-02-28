@@ -10,7 +10,7 @@ from chickenmap.models.entities import Review, Store, Brand, Menu
 def fetch_my_reviews(db: Session):
     # 내 리뷰 리스트를 위한 쿼리다. (현재는 전체 리뷰를 반환한다.)
     stmt = (
-        select(Review, Store.name, Brand.name, Menu.name)
+        select(Review, Store.name, Brand.name, Menu.name, Menu.category)
         .join(Store, Store.id == Review.store_id)
         .join(Brand, Brand.id == Review.brand_id)
         .join(Menu, Menu.id == Review.menu_id)
@@ -22,7 +22,7 @@ def fetch_my_reviews(db: Session):
 def fetch_review(db: Session, review_id: str):
     # 리뷰 상세를 조회한다.
     stmt = (
-        select(Review, Store.name, Brand.name, Menu.name)
+        select(Review, Store.name, Brand.name, Menu.name, Menu.category)
         .join(Store, Store.id == Review.store_id)
         .join(Brand, Brand.id == Review.brand_id)
         .join(Menu, Menu.id == Review.menu_id)

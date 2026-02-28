@@ -8,3 +8,5 @@ back/request_curl
 
 back/.env
 front/.env
+
+LightsailDefaultKey-ap-northeast-2.pem

@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 # API 응답 스키마를 정의하는 모듈이다.
@@ -39,13 +39,7 @@ class StoreSummaryOut(BaseModel):
 
 class RatingBreakdownOut(BaseModel):
     # 점수 분해 응답 모델이다.
-    crispy: float
-    juicy: float
-    salty: float
-    oil: float
-    chickenQuality: float
-    fryQuality: float
-    portion: float
+    scores: dict[str, float] = Field(default_factory=dict)
     overall: float
 
 
@@ -55,13 +49,8 @@ class ReviewOut(BaseModel):
     storeName: str
     brandName: str
     menuName: str
-    crispy: float
-    juicy: float
-    salty: float
-    oil: float
-    chickenQuality: float
-    fryQuality: float
-    portion: float
+    menuCategory: str
+    scores: dict[str, float] = Field(default_factory=dict)
     overall: float
     comment: str
     createdAt: datetime
@@ -101,12 +90,6 @@ class ReviewCreateIn(BaseModel):
     address: str
     brandId: str
     menuName: str
-    crispy: float
-    juicy: float
-    salty: float
-    oil: float
-    chickenQuality: float
-    fryQuality: float
-    portion: float
-    overall: float
+    scores: dict[str, float] = Field(default_factory=dict)
+    overall: float = 0.0
     comment: str
