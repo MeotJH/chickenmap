@@ -68,10 +68,7 @@ class RankingCard extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               flex: 11,
-              child: _ContentPanel(
-                ranking: ranking,
-                emphasizeTitle: true,
-              ),
+              child: _ContentPanel(ranking: ranking, emphasizeTitle: true),
             ),
           ],
         ),
@@ -94,10 +91,7 @@ class RankingCard extends StatelessWidget {
             compact: false,
           ),
           const SizedBox(height: 16),
-          _ContentPanel(
-            ranking: ranking,
-            emphasizeTitle: false,
-          ),
+          _ContentPanel(ranking: ranking, emphasizeTitle: false),
         ],
       ),
     );
@@ -131,11 +125,7 @@ class _VisualPanel extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFF0DCCF),
-            Color(0xFFEDE1D8),
-            Color(0xFFF5F5F3),
-          ],
+          colors: [Color(0xFFF0DCCF), Color(0xFFEDE1D8), Color(0xFFF5F5F3)],
         ),
       ),
       child: Stack(
@@ -225,21 +215,19 @@ class _ContentPanel extends StatelessWidget {
   final BrandMenuRanking ranking;
   final bool emphasizeTitle;
 
-  const _ContentPanel({
-    required this.ranking,
-    required this.emphasizeTitle,
-  });
+  const _ContentPanel({required this.ranking, required this.emphasizeTitle});
 
   @override
   Widget build(BuildContext context) {
-    final titleStyle = (emphasizeTitle
-            ? Theme.of(context).textTheme.headlineMedium
-            : Theme.of(context).textTheme.headlineSmall)
-        ?.copyWith(
-      color: const Color(0xFF09142A),
-      fontWeight: FontWeight.w800,
-      height: 1.15,
-    );
+    final titleStyle =
+        (emphasizeTitle
+                ? Theme.of(context).textTheme.headlineMedium
+                : Theme.of(context).textTheme.headlineSmall)
+            ?.copyWith(
+              color: const Color(0xFF09142A),
+              fontWeight: FontWeight.w800,
+              height: 1.15,
+            );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -283,24 +271,10 @@ class _ContentPanel extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        Wrap(
-          spacing: 12,
-          runSpacing: 10,
-          crossAxisAlignment: WrapCrossAlignment.center,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: const BoxDecoration(
-                color: Color(0xFFC9D8ED),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check,
-                color: Color(0xFF2563EB),
-                size: 24,
-              ),
-            ),
             Text(
               '${ranking.reviewCount} Reviews',
               style: const TextStyle(
@@ -311,7 +285,7 @@ class _ContentPanel extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF09142A),
+                color: const Color(0xFFFF5E00),
                 borderRadius: BorderRadius.circular(18),
               ),
               child: const Text(
@@ -341,10 +315,7 @@ class _BrandMeta extends StatelessWidget {
   final String brandLogoUrl;
   final String brandName;
 
-  const _BrandMeta({
-    required this.brandLogoUrl,
-    required this.brandName,
-  });
+  const _BrandMeta({required this.brandLogoUrl, required this.brandName});
 
   @override
   Widget build(BuildContext context) {
@@ -418,32 +389,21 @@ class _NetworkImageWithFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = imageUrl.trim();
     if (!_isValidHttpUrl(url)) {
-      return _buildImageFrame(
-        Image.asset(
-          fallbackAssetPath,
-          fit: fit,
-        ),
-      );
+      return _buildImageFrame(Image.asset(fallbackAssetPath, fit: fit));
     }
     return _buildImageFrame(
       Image.network(
         url,
         fit: fit,
         webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
-        errorBuilder: (context, error, stackTrace) => Image.asset(
-          fallbackAssetPath,
-          fit: fit,
-        ),
+        errorBuilder: (context, error, stackTrace) =>
+            Image.asset(fallbackAssetPath, fit: fit),
       ),
     );
   }
 
   Widget _buildImageFrame(Widget image) {
-    return SizedBox(
-      height: height,
-      width: width,
-      child: image,
-    );
+    return SizedBox(height: height, width: width, child: image);
   }
 
   bool _isValidHttpUrl(String value) {
@@ -458,10 +418,7 @@ class _HighlightChip extends StatelessWidget {
   final String label;
   final double value;
 
-  const _HighlightChip({
-    required this.label,
-    required this.value,
-  });
+  const _HighlightChip({required this.label, required this.value});
 
   @override
   // 하이라이트 항목 텍스트를 배치한다.

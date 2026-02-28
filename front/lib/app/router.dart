@@ -79,6 +79,7 @@ final GoRouter appRouter = GoRouter(
           address: params['address'],
           menuName: params['menuName'],
           brandId: params['brandId'],
+          brandName: params['brandName'],
         );
       },
     ),

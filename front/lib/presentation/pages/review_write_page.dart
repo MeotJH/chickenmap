@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:front/app/write_chicken_review_button.dart';
 import 'package:front/core/constants/app_colors.dart';
 import 'package:front/core/constants/rating_dimensions.dart';
@@ -18,6 +19,7 @@ class ReviewWritePage extends ConsumerStatefulWidget {
   final String? address;
   final String? menuName;
   final String? brandId;
+  final String? brandName;
 
   const ReviewWritePage({
     super.key,
@@ -25,6 +27,7 @@ class ReviewWritePage extends ConsumerStatefulWidget {
     this.address,
     this.menuName,
     this.brandId,
+    this.brandName,
   });
 
   @override
@@ -48,7 +51,22 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
   Brand? _lastConfirmedBrand;
   final _commentController = TextEditingController();
   bool _isSubmitting = false;
-  String? _submitError;
+  bool get _isBrandLocked =>
+      (widget.brandId?.isNotEmpty ?? false) ||
+      (widget.brandName?.isNotEmpty ?? false);
+
+  Future<void> _showTopToast(String message) async {
+    if (!mounted) return;
+    await Flushbar<void>(
+      message: message,
+      duration: const Duration(seconds: 2),
+      flushbarPosition: FlushbarPosition.TOP,
+      backgroundColor: const Color(0xFF2A2A2A),
+      margin: const EdgeInsets.all(12),
+      borderRadius: BorderRadius.circular(10),
+      icon: const Icon(Icons.info_outline, color: Colors.white),
+    ).show(context);
+  }
 
   @override
   void initState() {
@@ -69,7 +87,8 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
       final repository = ref.read(menuRepositoryProvider);
       final brands = await repository.fetchBrands();
       final matched = widget.brandId == null || widget.brandId!.isEmpty
-          ? (_matchBrand(brands, widget.storeName ?? '') ??
+          ? (_findBrandByName(brands, widget.brandName ?? '') ??
+                _matchBrand(brands, widget.storeName ?? '') ??
                 _findBrandById(brands, 'brand-local'))
           : _findBrandById(brands, widget.brandId!) ?? brands.first;
       setState(() {
@@ -101,6 +120,16 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
   Brand? _findBrandById(List<Brand> brands, String brandId) {
     for (final brand in brands) {
       if (brand.id == brandId) return brand;
+    }
+    return null;
+  }
+
+  Brand? _findBrandByName(List<Brand> brands, String brandName) {
+    final target = brandName.replaceAll(' ', '').toLowerCase();
+    if (target.isEmpty) return null;
+    for (final brand in brands) {
+      final normalized = brand.name.replaceAll(' ', '').toLowerCase();
+      if (normalized == target) return brand;
     }
     return null;
   }
@@ -142,29 +171,22 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
 
   Future<void> _submitReview() async {
     if (_selectedBrand == null) {
-      setState(() {
-        _submitError = '브랜드를 선택해주세요.';
-      });
+      await _showTopToast('브랜드를 선택해주세요.');
       return;
     }
     final selectedMenu = _selectedMenu;
     if (selectedMenu == null) {
-      setState(() {
-        _submitError = '메뉴를 선택해주세요.';
-      });
+      await _showTopToast('메뉴를 선택해주세요.');
       return;
     }
     final storeName = widget.storeName ?? '';
     if (storeName.isEmpty) {
-      setState(() {
-        _submitError = '치킨집을 선택해주세요.';
-      });
+      await _showTopToast('치킨집을 선택해주세요.');
       return;
     }
 
     setState(() {
       _isSubmitting = true;
-      _submitError = null;
     });
     try {
       final repository = ref.read(reviewRepositoryProvider);
@@ -184,9 +206,7 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
       if (!mounted) return;
       context.push('/review/${review.id}', extra: review);
     } catch (_) {
-      setState(() {
-        _submitError = '리뷰 제출에 실패했어요.';
-      });
+      await _showTopToast('리뷰 제출에 실패했어요.');
     } finally {
       if (mounted) {
         setState(() {
@@ -314,8 +334,7 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                               )
                               .toList(),
                           onChanged:
-                              widget.brandId != null &&
-                                  widget.brandId!.isNotEmpty
+                              _isBrandLocked
                               ? null
                               : (brand) async {
                                   if (brand == null) return;
@@ -337,8 +356,17 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
+                              borderSide: const BorderSide(color: AppColors.cardBorder),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: AppColors.cardBorder),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
                                 color: AppColors.cardBorder,
+                                width: 1.4,
                               ),
                             ),
                           ),
@@ -376,13 +404,21 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                                     hintText: _loadingMenus
                                         ? '메뉴 불러오는 중...'
                                         : '메뉴 검색 후 선택',
-                                    helperText: '목록에서 선택한 메뉴만 제출할 수 있어요.',
                                     filled: true,
                                     fillColor: Colors.white,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(
+                                      borderSide: const BorderSide(color: AppColors.cardBorder),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: AppColors.cardBorder),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
                                         color: AppColors.cardBorder,
+                                        width: 1.4,
                                       ),
                                     ),
                                   ),
@@ -496,7 +532,18 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: AppColors.cardBorder),
+                        borderSide: const BorderSide(color: AppColors.cardBorder),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: AppColors.cardBorder),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(
+                          color: AppColors.cardBorder,
+                          width: 1.4,
+                        ),
                       ),
                     ),
                   ),
@@ -506,13 +553,6 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                   //   icon: const Icon(Icons.add_a_photo),
                   //   label: const Text('사진 추가'),
                   // ),
-                  if (_submitError != null) ...[
-                    const SizedBox(height: 10),
-                    Text(
-                      _submitError!,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  ],
                   const SizedBox(height: 24),
                 ],
               ),
