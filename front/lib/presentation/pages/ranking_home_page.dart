@@ -131,21 +131,27 @@ class _RankingHeader extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.restaurant,
-                    color: Colors.deepOrange,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    AppStrings.appName,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ],
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.restaurant,
+                      color: Colors.deepOrange,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        AppStrings.appName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               IconButton(
                 onPressed: () {},

@@ -39,10 +39,11 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
   double fryQuality = 3.0;
   double portion = 3.0;
   double overall = 3.0;
-  late final TextEditingController _menuController;
   List<Brand> _brands = [];
   Brand? _selectedBrand;
   List<Menu> _menus = [];
+  Menu? _selectedMenu;
+  final _menuSearchController = TextEditingController();
   bool _loadingMenus = false;
   String? _menuError;
   Brand? _lastConfirmedBrand;
@@ -53,14 +54,13 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
   @override
   void initState() {
     super.initState();
-    _menuController = TextEditingController(text: widget.menuName ?? '');
     overall = _calculateOverall();
     _loadBrands();
   }
 
   @override
   void dispose() {
-    _menuController.dispose();
+    _menuSearchController.dispose();
     _commentController.dispose();
     super.dispose();
   }
@@ -101,16 +101,28 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
     return null;
   }
 
-  Future<void> _loadMenus(String brandId, {String? query}) async {
+  Future<void> _loadMenus(String brandId) async {
     setState(() {
       _loadingMenus = true;
       _menuError = null;
     });
     try {
       final repository = ref.read(menuRepositoryProvider);
-      final menus = await repository.fetchMenus(brandId, query: query);
+      final menus = await repository.fetchMenus(brandId);
+      Menu? selectedMenu;
+      final incomingMenuName = widget.menuName?.trim();
+      if (incomingMenuName != null && incomingMenuName.isNotEmpty) {
+        for (final menu in menus) {
+          if (menu.name == incomingMenuName) {
+            selectedMenu = menu;
+            break;
+          }
+        }
+      }
       setState(() {
         _menus = menus;
+        _selectedMenu = selectedMenu;
+        _menuSearchController.text = selectedMenu?.name ?? '';
       });
     } catch (_) {
       setState(() {
@@ -130,10 +142,10 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
       });
       return;
     }
-    final menuName = _menuController.text.trim();
-    if (menuName.isEmpty) {
+    final selectedMenu = _selectedMenu;
+    if (selectedMenu == null) {
       setState(() {
-        _submitError = '메뉴를 입력해주세요.';
+        _submitError = '메뉴를 선택해주세요.';
       });
       return;
     }
@@ -156,7 +168,7 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
           storeName: storeName,
           address: widget.address ?? '',
           brandId: _selectedBrand!.id,
-          menuName: menuName,
+          menuName: selectedMenu.name,
           crispy: crispy,
           juicy: juicy,
           salty: salty,
@@ -297,7 +309,8 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                                   setState(() {
                                     _selectedBrand = brand;
                                     _lastConfirmedBrand = brand;
-                                    _menuController.clear();
+                                    _selectedMenu = null;
+                                    _menuSearchController.clear();
                                   });
                                   _loadMenus(brand.id);
                                 },
@@ -316,24 +329,24 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                         const SizedBox(height: 8),
                         Autocomplete<Menu>(
                           optionsBuilder: (textEditingValue) {
-                            final query = textEditingValue.text.trim();
-                            if (query.isEmpty) {
-                              return _menus;
-                            }
+                            final query =
+                                textEditingValue.text.trim().toLowerCase();
+                            if (query.isEmpty) return _menus;
                             return _menus.where(
-                              (menu) => menu.name.toLowerCase().contains(
-                                    query.toLowerCase(),
-                                  ),
+                              (menu) => menu.name.toLowerCase().contains(query),
                             );
                           },
                           displayStringForOption: (menu) => menu.name,
                           onSelected: (menu) {
-                            _menuController.text = menu.name;
+                            setState(() {
+                              _selectedMenu = menu;
+                            });
+                            _menuSearchController.text = menu.name;
                           },
                           fieldViewBuilder:
                               (context, controller, focusNode, onSubmitted) {
-                            if (controller.text != _menuController.text) {
-                              controller.value = _menuController.value;
+                            if (controller.text != _menuSearchController.text) {
+                              controller.value = _menuSearchController.value;
                             }
                             return TextField(
                               controller: controller,
@@ -341,8 +354,8 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                               decoration: InputDecoration(
                                 hintText: _loadingMenus
                                     ? '메뉴 불러오는 중...'
-                                    : '메뉴 검색 또는 직접 입력',
-                                helperText: '목록에 없으면 메뉴명을 직접 입력하고 제출하면 추가돼요.',
+                                    : '메뉴 검색 후 선택',
+                                helperText: '목록에서 선택한 메뉴만 제출할 수 있어요.',
                                 filled: true,
                                 fillColor: Colors.white,
                                 border: OutlineInputBorder(
@@ -353,19 +366,37 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                                 ),
                               ),
                               onChanged: (value) {
-                                _menuController.value = controller.value;
-                                if (_selectedBrand != null &&
-                                    value.length >= 2) {
-                                  _loadMenus(
-                                    _selectedBrand!.id,
-                                    query: value,
-                                  );
+                                _menuSearchController.value = controller.value;
+                                final selected = _selectedMenu;
+                                if (selected != null &&
+                                    selected.name != value) {
+                                  setState(() {
+                                    _selectedMenu = null;
+                                  });
                                 }
                               },
                               onSubmitted: (_) => onSubmitted(),
                             );
                           },
                           optionsViewBuilder: (context, onSelected, options) {
+                            final list = options.toList(growable: false);
+                            if (list.isEmpty) {
+                              return Align(
+                                alignment: Alignment.topLeft,
+                                child: Material(
+                                  elevation: 4,
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width - 64,
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(12),
+                                      child: Text('검색 결과가 없어요.'),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
                             return Align(
                               alignment: Alignment.topLeft,
                               child: Material(
@@ -376,9 +407,9 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                                   child: ListView.builder(
                                     padding: const EdgeInsets.all(8),
                                     shrinkWrap: true,
-                                    itemCount: options.length,
+                                    itemCount: list.length,
                                     itemBuilder: (context, index) {
-                                      final menu = options.elementAt(index);
+                                      final menu = list[index];
                                       return ListTile(
                                         title: Text(menu.name),
                                         onTap: () => onSelected(menu),
