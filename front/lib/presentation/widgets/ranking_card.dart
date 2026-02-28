@@ -1,9 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:front/core/constants/app_colors.dart';
 import 'package:front/core/constants/app_sizes.dart';
 import 'package:front/core/utils/formatters.dart';
 import 'package:front/domain/entities/brand_menu_ranking.dart';
 import 'package:front/presentation/widgets/rating_badge.dart';
+
+const _rankingDefaultImageAsset = 'assets/chicken_default.png';
 
 // 랭킹 카드 UI를 표현하는 위젯이다.
 class RankingCard extends StatelessWidget {
@@ -45,8 +47,9 @@ class RankingCard extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(AppSizes.cardRadius),
                   ),
-                  child: Image.network(
-                    ranking.imageUrl,
+                  child: _NetworkImageWithFallback(
+                    imageUrl: ranking.imageUrl,
+                    fallbackAssetPath: _rankingDefaultImageAsset,
                     height: 180,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -56,14 +59,17 @@ class RankingCard extends StatelessWidget {
                   top: 12,
                   left: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: rankIndex == 0 ? AppColors.primary : Colors.black87,
+                      color:
+                          rankIndex == 0 ? AppColors.primary : Colors.black87,
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
                       '#${rankIndex + 1} Overall',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -87,8 +93,21 @@ class RankingCard extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 12,
-                        backgroundImage: NetworkImage(ranking.brandLogoUrl),
+                        backgroundImage: ranking.brandLogoUrl.trim().isEmpty
+                            ? null
+                            : NetworkImage(ranking.brandLogoUrl),
                         backgroundColor: Colors.white,
+                        onBackgroundImageError:
+                            ranking.brandLogoUrl.trim().isEmpty
+                                ? null
+                                : (_, __) {},
+                        child: ranking.brandLogoUrl.trim().isEmpty
+                            ? const Icon(
+                                Icons.restaurant,
+                                size: 14,
+                                color: AppColors.textSecondary,
+                              )
+                            : null,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -145,6 +164,60 @@ class RankingCard extends StatelessWidget {
   }
 }
 
+class _NetworkImageWithFallback extends StatelessWidget {
+  final String imageUrl;
+  final String fallbackAssetPath;
+  final double height;
+  final double width;
+  final BoxFit fit;
+
+  const _NetworkImageWithFallback({
+    required this.imageUrl,
+    required this.fallbackAssetPath,
+    required this.height,
+    required this.width,
+    required this.fit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl.trim();
+    if (url.isEmpty) {
+      return _buildImageFrame(
+        Image.asset(
+          fallbackAssetPath,
+          fit: BoxFit.contain,
+        ),
+      );
+    }
+    return _buildImageFrame(
+      Image.network(
+        url,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          fallbackAssetPath,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageFrame(Widget image) {
+    final squareSize = (height - 28).clamp(120.0, height);
+    return Container(
+      height: height,
+      width: width,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+      alignment: Alignment.center,
+      child: SizedBox.square(
+        dimension: squareSize,
+        child: image,
+      ),
+    );
+  }
+}
+
 // 랭킹 카드의 하이라이트 항목을 표시하는 칩이다.
 class _HighlightChip extends StatelessWidget {
   final String label;
@@ -160,7 +233,8 @@ class _HighlightChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(Icons.thumb_up, size: 14, color: Theme.of(context).colorScheme.primary),
+        Icon(Icons.thumb_up,
+            size: 14, color: Theme.of(context).colorScheme.primary),
         const SizedBox(width: 4),
         Text(
           '$label ${RatingFormatter.score(value)}',

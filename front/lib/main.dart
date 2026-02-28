@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/app/app.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:front/presentation/utils/naver_map_init.dart';
+import 'package:front/presentation/providers/app_providers.dart';
 
 // 앱 시작 지점: Riverpod 스코프와 앱 위젯을 연결한다.
 Future<void> main() async {
@@ -15,5 +16,13 @@ Future<void> main() async {
   }
   await initNaverMap(clientId);
 
-  runApp(const ProviderScope(child: ChickenMapApp()));
+  final container = ProviderContainer();
+  await container.read(currentLocationProvider.notifier).initialize();
+
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: const ChickenMapApp(),
+    ),
+  );
 }

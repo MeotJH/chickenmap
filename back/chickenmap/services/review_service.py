@@ -1,5 +1,7 @@
 from datetime import datetime
 import uuid
+import re
+from difflib import SequenceMatcher
 from sqlalchemy.orm import Session
 
 from chickenmap.models.entities import Brand, Menu, Store, Review, BrandMenuAggregate, StoreAggregate
@@ -26,19 +28,15 @@ def create_review(db: Session, payload):
     if brand is None:
         raise ValueError("Brand not found")
 
-    menu = (
-        db.query(Menu)
-        .filter(Menu.brand_id == brand.id)
-        .filter(Menu.name == payload.menuName)
-        .first()
-    )
+    normalized_input_menu = _normalize_menu_name(payload.menuName)
+    menu = _find_best_matching_menu(db, brand.id, payload.menuName)
     if menu is None:
         menu = Menu(
             id=f"menu-{uuid.uuid4().hex}",
             brand_id=brand.id,
-            name=payload.menuName,
+            name=payload.menuName.strip(),
             image_url="",
-            category="기타",
+            category=_classify_menu_category(normalized_input_menu),
         )
         db.add(menu)
 
@@ -221,3 +219,61 @@ def _pick_top_highlights(
     ]
     metrics.sort(key=lambda item: item[1], reverse=True)
     return metrics[:2]
+
+
+def _normalize_menu_name(name: str) -> str:
+    # 비교용 정규화: 공백/특수문자 제거, 소문자 통일
+    normalized = name.strip().lower()
+    normalized = re.sub(r"\s+", "", normalized)
+    normalized = re.sub(r"[^0-9a-z가-힣]", "", normalized)
+    return normalized
+
+
+def _find_best_matching_menu(db: Session, brand_id: str, raw_name: str) -> Menu | None:
+    # 같은 브랜드 내에서 기존 메뉴명을 우선 매칭한다.
+    menus = db.query(Menu).filter(Menu.brand_id == brand_id).all()
+    if not menus:
+        return None
+
+    stripped = raw_name.strip()
+    for existing in menus:
+        if existing.name.strip() == stripped:
+            return existing
+
+    normalized_target = _normalize_menu_name(stripped)
+    if not normalized_target:
+        return None
+
+    # 1) 정규화 문자열 완전일치(띄어쓰기/특수문자 차이 흡수)
+    for existing in menus:
+        if _normalize_menu_name(existing.name) == normalized_target:
+            return existing
+
+    # 2) 오타 보정(브랜드 내 가장 유사한 메뉴를 임계치 이상일 때 채택)
+    best_menu: Menu | None = None
+    best_score = 0.0
+    for existing in menus:
+        score = SequenceMatcher(
+            a=normalized_target,
+            b=_normalize_menu_name(existing.name),
+        ).ratio()
+        if score > best_score:
+            best_score = score
+            best_menu = existing
+
+    if best_menu is not None and best_score >= 0.80:
+        return best_menu
+    return None
+
+
+def _classify_menu_category(normalized_name: str) -> str:
+    # 새 메뉴 생성 시 기본 카테고리를 이름 기반으로 분류한다.
+    if "후라이드" in normalized_name:
+        return "후라이드"
+    if "양념" in normalized_name:
+        return "양념"
+    if "간장" in normalized_name or "소이" in normalized_name:
+        return "양념"
+    if "숯불" in normalized_name or "바베큐" in normalized_name or "구이" in normalized_name:
+        return "구이"
+    return "기타"

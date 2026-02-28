@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 
@@ -13,6 +10,7 @@ Widget buildNaverMapViewImpl({
   required double lng,
   required double zoom,
   required List<MapMarkerData> markers,
+  String? selectedMarkerId,
   ValueChanged<String>? onMarkerTap,
   ValueChanged<dynamic>? onMapReady,
 }) {
@@ -24,16 +22,12 @@ Widget buildNaverMapViewImpl({
       ),
     ),
     onMapReady: (controller) async {
-      final transparentIcon = await NOverlayImage.fromByteArray(
-        _transparentPngBytes,
-      );
       for (final marker in markers) {
         final nMarker = NMarker(
           id: marker.id,
           position: NLatLng(marker.lat, marker.lng),
         );
-        // Use a transparent icon and render a chicken emoji as the marker glyph.
-        nMarker.setIcon(transparentIcon);
+        // Keep the default marker icon so tap hit-area remains reliable.
         nMarker.setCaption(
           const NOverlayCaption(
             text: '\u{1F357}',
@@ -50,7 +44,3 @@ Widget buildNaverMapViewImpl({
     },
   );
 }
-
-final Uint8List _transparentPngBytes = base64Decode(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7dB9kAAAAASUVORK5CYII=',
-);

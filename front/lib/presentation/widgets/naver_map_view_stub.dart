@@ -9,6 +9,7 @@ Widget buildNaverMapViewImpl({
   required double lng,
   required double zoom,
   required List<MapMarkerData> markers,
+  String? selectedMarkerId,
   ValueChanged<String>? onMarkerTap,
   ValueChanged<dynamic>? onMapReady,
 }) {

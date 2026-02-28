@@ -77,8 +77,6 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/animations/draw_image_loading.json
-    - assets/no_images.jpg
     - assets/
     - .env
 

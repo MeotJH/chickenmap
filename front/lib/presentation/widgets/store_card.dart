@@ -1,8 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:front/core/constants/app_colors.dart';
 import 'package:front/core/constants/app_sizes.dart';
 import 'package:front/core/utils/formatters.dart';
 import 'package:front/domain/entities/store_summary.dart';
+
+const _storeDefaultImageAsset = 'assets/chicken_store_default.png';
 
 // 지도 하단 카드에서 사용하는 지점 카드 위젯이다.
 class StoreCard extends StatelessWidget {
@@ -37,11 +39,8 @@ class StoreCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(14),
-              child: Image.network(
-                store.imageUrl,
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
+              child: _StoreImageWithFallback(
+                imageUrl: store.imageUrl,
               ),
             ),
             const SizedBox(width: 12),
@@ -56,7 +55,8 @@ class StoreCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     store.address,
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 6),
                   Row(
@@ -70,7 +70,8 @@ class StoreCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         '${store.reviewCount} 리뷰',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColors.textSecondary),
                       ),
                     ],
                   ),
@@ -80,6 +81,45 @@ class StoreCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _StoreImageWithFallback extends StatelessWidget {
+  final String imageUrl;
+
+  const _StoreImageWithFallback({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl.trim();
+    if (url.isEmpty) {
+      return _buildSquareFrame(
+        Image.asset(
+          _storeDefaultImageAsset,
+          fit: BoxFit.contain,
+        ),
+      );
+    }
+    return _buildSquareFrame(
+      Image.network(
+        url,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          _storeDefaultImageAsset,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSquareFrame(Widget image) {
+    return Container(
+      width: 80,
+      height: 80,
+      color: Colors.white,
+      padding: const EdgeInsets.all(6),
+      child: image,
     );
   }
 }

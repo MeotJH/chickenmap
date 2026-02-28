@@ -11,6 +11,7 @@ Widget buildNaverMapView({
   required double lng,
   required double zoom,
   required List<MapMarkerData> markers,
+  String? selectedMarkerId,
   ValueChanged<String>? onMarkerTap,
   ValueChanged<dynamic>? onMapReady,
 }) {
@@ -20,6 +21,7 @@ Widget buildNaverMapView({
     lng: lng,
     zoom: zoom,
     markers: markers,
+    selectedMarkerId: selectedMarkerId,
     onMarkerTap: onMarkerTap,
     onMapReady: onMapReady,
   );

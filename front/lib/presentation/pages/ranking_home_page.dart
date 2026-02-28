@@ -1,10 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/core/constants/app_sizes.dart';
 import 'package:front/core/constants/app_strings.dart';
-import 'package:front/core/constants/app_colors.dart';
 import 'package:front/domain/entities/brand_menu_ranking.dart';
 import 'package:front/presentation/providers/ranking_providers.dart';
+import 'package:front/presentation/widgets/app_filter_chip.dart';
 import 'package:front/presentation/widgets/ranking_card.dart';
 import 'package:front/presentation/widgets/section_title.dart';
 import 'package:go_router/go_router.dart';
@@ -142,8 +142,8 @@ class _RankingHeader extends StatelessWidget {
                   Text(
                     AppStrings.appName,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 ],
               ),
@@ -174,25 +174,29 @@ class _RankingHeader extends StatelessWidget {
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                _FilterChip(
+                AppFilterChip(
                   label: '전체',
                   selected: selectedCategory == '전체',
                   onSelected: onCategorySelected,
+                  width: 56,
                 ),
-                _FilterChip(
+                AppFilterChip(
                   label: '후라이드',
                   selected: selectedCategory == '후라이드',
                   onSelected: onCategorySelected,
+                  width: 56,
                 ),
-                _FilterChip(
+                AppFilterChip(
                   label: '양념',
                   selected: selectedCategory == '양념',
                   onSelected: onCategorySelected,
+                  width: 56,
                 ),
-                _FilterChip(
+                AppFilterChip(
                   label: '구이',
                   selected: selectedCategory == '구이',
                   onSelected: onCategorySelected,
+                  width: 56,
                 ),
               ],
             ),
@@ -203,52 +207,6 @@ class _RankingHeader extends StatelessWidget {
             trailing: 'Updated Today',
           ),
         ],
-      ),
-    );
-  }
-}
-
-// 랭킹 상단 필터 칩을 표현한다.
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final ValueChanged<String> onSelected;
-
-  const _FilterChip({
-    required this.label,
-    this.selected = false,
-    required this.onSelected,
-  });
-
-  @override
-  // 선택 가능한 필터 칩을 렌더링한다.
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(right: 3),
-      child: FilterChip(
-        selected: selected,
-        onSelected: (_) => onSelected(label),
-        showCheckmark: false,
-        checkmarkColor: Colors.transparent,
-        side: BorderSide(
-          color: selected ? AppColors.primary : AppColors.cardBorder,
-        ),
-        label: SizedBox(
-          width: 56,
-          height: 24,
-          child: Center(
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.visible,
-              softWrap: false,
-            ),
-          ),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        labelPadding: EdgeInsets.zero,
-        visualDensity: VisualDensity.compact,
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     );
   }

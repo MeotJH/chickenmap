@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/core/constants/app_colors.dart';
 import 'package:front/presentation/widgets/rating_slider.dart';
@@ -286,20 +286,21 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                                 ),
                               )
                               .toList(),
-                          onChanged: widget.brandId != null && widget.brandId!.isNotEmpty
+                          onChanged: widget.brandId != null &&
+                                  widget.brandId!.isNotEmpty
                               ? null
                               : (brand) async {
-                            if (brand == null) return;
-                            if (!await _confirmBrandChange(brand)) {
-                              return;
-                            }
-                            setState(() {
-                              _selectedBrand = brand;
-                              _lastConfirmedBrand = brand;
-                              _menuController.clear();
-                            });
-                            _loadMenus(brand.id);
-                          },
+                                  if (brand == null) return;
+                                  if (!await _confirmBrandChange(brand)) {
+                                    return;
+                                  }
+                                  setState(() {
+                                    _selectedBrand = brand;
+                                    _lastConfirmedBrand = brand;
+                                    _menuController.clear();
+                                  });
+                                  _loadMenus(brand.id);
+                                },
                           decoration: InputDecoration(
                             hintText: '브랜드 선택',
                             filled: true,
@@ -321,8 +322,8 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                             }
                             return _menus.where(
                               (menu) => menu.name.toLowerCase().contains(
-                                query.toLowerCase(),
-                              ),
+                                    query.toLowerCase(),
+                                  ),
                             );
                           },
                           displayStringForOption: (menu) => menu.name,
@@ -331,36 +332,39 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                           },
                           fieldViewBuilder:
                               (context, controller, focusNode, onSubmitted) {
-                                _menuController
-                                  ..text = controller.text
-                                  ..selection = controller.selection;
-                                return TextField(
-                                  controller: controller,
-                                  focusNode: focusNode,
-                                  decoration: InputDecoration(
-                                    hintText: _loadingMenus
-                                        ? '메뉴 불러오는 중...'
-                                        : '메뉴를 검색하세요',
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(
-                                        color: AppColors.cardBorder,
-                                      ),
-                                    ),
+                            if (controller.text != _menuController.text) {
+                              controller.value = _menuController.value;
+                            }
+                            return TextField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              decoration: InputDecoration(
+                                hintText: _loadingMenus
+                                    ? '메뉴 불러오는 중...'
+                                    : '메뉴 검색 또는 직접 입력',
+                                helperText: '목록에 없으면 메뉴명을 직접 입력하고 제출하면 추가돼요.',
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: AppColors.cardBorder,
                                   ),
-                                  onChanged: (value) {
-                                    if (_selectedBrand != null &&
-                                        value.length >= 2) {
-                                      _loadMenus(
-                                        _selectedBrand!.id,
-                                        query: value,
-                                      );
-                                    }
-                                  },
-                                );
+                                ),
+                              ),
+                              onChanged: (value) {
+                                _menuController.value = controller.value;
+                                if (_selectedBrand != null &&
+                                    value.length >= 2) {
+                                  _loadMenus(
+                                    _selectedBrand!.id,
+                                    query: value,
+                                  );
+                                }
                               },
+                              onSubmitted: (_) => onSubmitted(),
+                            );
+                          },
                           optionsViewBuilder: (context, onSelected, options) {
                             return Align(
                               alignment: Alignment.topLeft,
@@ -481,7 +485,8 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                   ),
                   if (_submitError != null) ...[
                     const SizedBox(height: 10),
-                    Text(_submitError!, style: const TextStyle(color: Colors.red)),
+                    Text(_submitError!,
+                        style: const TextStyle(color: Colors.red)),
                   ],
                   const SizedBox(height: 24),
                 ],

@@ -13,7 +13,8 @@ def geocode_address(address: str):
     key_id = os.getenv("NCP_GEOCODE_API_KEY_ID")
     key = os.getenv("NCP_GEOCODE_API_KEY")
     if not key_id or not key:
-        raise RuntimeError("NCP geocode keys are missing")
+        # 키가 없으면 지오코딩을 건너뛰고 호출부에서 기본 좌표 처리한다.
+        return {"addresses": []}
 
     response = requests.get(
         GEOCODE_ENDPOINT,

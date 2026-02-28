@@ -12,6 +12,7 @@ Widget buildNaverMapViewImpl({
   required double lng,
   required double zoom,
   required List<MapMarkerData> markers,
+  String? selectedMarkerId,
   ValueChanged<String>? onMarkerTap,
   ValueChanged<dynamic>? onMapReady,
 }) {
@@ -46,10 +47,11 @@ Widget buildNaverMapViewImpl({
     initialLatitude: lat,
     initialLongitude: lng,
     initialZoom: zoom.round(),
+    zoomControl: false,
     places: places,
-    // onMarkerClick: (place) => onMarkerTap?.call(place.id),
-    // markerSize: Size(28, 28),
+    selectedPlaceId: selectedMarkerId,
+    onMarkerClick: (place) => onMarkerTap?.call(place.id),
+    onMapReady: (map) => onMapReady?.call(map),
   );
-  onMapReady?.call(map);
   return map;
 }

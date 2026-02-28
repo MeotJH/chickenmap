@@ -25,10 +25,8 @@ def init_db():
 
 
 def seed_if_empty(db: Session):
-    # 기존 데이터가 없을 때만 목업 데이터를 삽입한다.
-    has_brand = db.execute(select(Brand.id)).first()
-    if has_brand:
-        return
+    # 기준 데이터(브랜드/메뉴)는 없는 항목만 추가한다.
+    # 샘플 지점/집계/리뷰는 기존 데이터가 없을 때만 삽입한다.
 
     brands = [
         Brand(
@@ -46,7 +44,87 @@ def seed_if_empty(db: Session):
             name="교촌",
             logo_url="https://lh3.googleusercontent.com/aida-public/AB6AXuBUSMKs4gekdXjZzAzJqvZ9uyDG474nIQ2TK--TwGGWuig7P8a9nCjsX7BIDQaDkwrxlBjjxqpWMqGI8Dy83umlmAjIfAJMGc-TqN0Qx_st--DtzKGlukUYJKInbIpBOHLyAIZ79Ag8LFUbuEjeVP3aD51E8R0_VPDfRBDZpJ6lNUwWacrcpFAzjlQ-g-wUv_v3XbOwj7R7wGcTNyexV0Wmeri6Bjq_xzX1GffPjNc7EcSe2nfS9POGiA8lXkNQH3O78Cpj_u9Qrucq",
         ),
+        Brand(id="brand-goobne", name="굽네치킨", logo_url=""),
+        Brand(id="brand-nene", name="네네치킨", logo_url=""),
+        Brand(id="brand-cheogatjib", name="처갓집양념치킨", logo_url=""),
+        Brand(id="brand-puradak", name="푸라닭", logo_url=""),
+        Brand(id="brand-60gye", name="60계치킨", logo_url=""),
+        Brand(id="brand-norang", name="노랑통닭", logo_url=""),
+        Brand(id="brand-jadam", name="자담치킨", logo_url=""),
+        Brand(id="brand-pericana", name="페리카나", logo_url=""),
+        Brand(id="brand-toreore", name="또래오래", logo_url=""),
+        Brand(id="brand-hosigi", name="호식이두마리치킨", logo_url=""),
+        Brand(id="brand-mexicana", name="멕시카나", logo_url=""),
+        Brand(id="brand-kkanbu", name="깐부치킨", logo_url=""),
+        Brand(id="brand-kfc", name="KFC", logo_url=""),
+        Brand(id="brand-gamtangyesucbulcikin", name="감탄계숯불치킨", logo_url=""),
+        Brand(id="brand-gastwiginhuraideu", name="갓튀긴후라이드", logo_url=""),
+        Brand(id="brand-gudorotongdalg", name="구도로통닭", logo_url=""),
+        Brand(id="brand-gugminmaneulcikin", name="국민마늘치킨", logo_url=""),
+        Brand(id="brand-geumdongidumaricikin", name="금동이두마리치킨", logo_url=""),
+        Brand(id="brand-gimsasgastongdalg", name="김삿갓통닭", logo_url=""),
+        Brand(id="brand-gimsunrye-sunsalcikingangjeong", name="김순례 순살치킨강정", logo_url=""),
+        Brand(id="brand-gimjonggusigmascikin-jeongibabekyu-yesnaltongdalg", name="김종구식맛치킨· 전기바베큐 옛날통닭", logo_url=""),
+        Brand(id="brand-gimjongyongnurungjitongdalg", name="김종용누룽지통닭", logo_url=""),
+        Brand(id="brand-ggeoguricikin", name="꺼구리치킨", logo_url=""),
+        Brand(id="brand-ggubeuraggosucbuldumaricikin", name="꾸브라꼬숯불두마리치킨", logo_url=""),
+        Brand(id="brand-naega-joseonyi-cikinigo-maegjuda", name="내가 조선의 치킨이고 맥주다", logo_url=""),
+        Brand(id="brand-nugunaholddagbanhandalg", name="누구나홀딱반한닭", logo_url=""),
+        Brand(id="brand-dasarang", name="다사랑", logo_url=""),
+        Brand(id="brand-dalgjangsuhuraideuhe", name="닭장수후라이드和", logo_url=""),
+        Brand(id="brand-didicikin", name="디디치킨", logo_url=""),
+        Brand(id="brand-ddangddangcikin", name="땅땅치킨", logo_url=""),
+        Brand(id="brand-ddobongitongdalg", name="또봉이통닭", logo_url=""),
+        Brand(id="brand-mapacikin", name="마파치킨", logo_url=""),
+        Brand(id="brand-mannyeondalggangjeong", name="만년닭강정", logo_url=""),
+        Brand(id="brand-mamseuteoci", name="맘스터치", logo_url=""),
+        Brand(id="brand-masdalgggo", name="맛닭꼬", logo_url=""),
+        Brand(id="brand-megsikancikin", name="멕시칸치킨", logo_url=""),
+        Brand(id="brand-mubwassnacondalg", name="무봤나촌닭", logo_url=""),
+        Brand(id="brand-bareuncikin", name="바른치킨", logo_url=""),
+        Brand(id="brand-babihu", name="바비후", logo_url=""),
+        Brand(id="brand-bueocikin", name="부어치킨", logo_url=""),
+        Brand(id="brand-buladeo-sucbulbabekyu", name="불아더 숯불바베큐", logo_url=""),
+        Brand(id="brand-sujjimdalg", name="수찜닭", logo_url=""),
+        Brand(id="brand-sunsalmangonggyeog", name="순살만공격", logo_url=""),
+        Brand(id="brand-sunsucikin", name="순수치킨", logo_url=""),
+        Brand(id="brand-ssangdungisucbuldumaricikin", name="쌍둥이숯불두마리치킨", logo_url=""),
+        Brand(id="brand-ausdalg", name="아웃닭", logo_url=""),
+        Brand(id="brand-ajukeo", name="아주커", logo_url=""),
+        Brand(id="brand-egeupapa", name="에그파파", logo_url=""),
+        Brand(id="brand-yeongdotongdalg", name="영도통닭", logo_url=""),
+        Brand(id="brand-obeunmaru", name="오븐마루", logo_url=""),
+        Brand(id="brand-obeunebbajindalg", name="오븐에빠진닭", logo_url=""),
+        Brand(id="brand-wangangjeong", name="완강정", logo_url=""),
+        Brand(id="brand-weldeomcikin", name="웰덤치킨", logo_url=""),
+        Brand(id="brand-inadalggangjeong", name="이나닭강정", logo_url=""),
+        Brand(id="brand-insaengcikin", name="인생치킨", logo_url=""),
+        Brand(id="brand-jiraldalgbal", name="지랄닭발", logo_url=""),
+        Brand(id="brand-jikoba", name="지코바", logo_url=""),
+        Brand(id="brand-jingangjeong", name="진강정", logo_url=""),
+        Brand(id="brand-jjangdalgcikin", name="짱닭치킨", logo_url=""),
+        Brand(id="brand-jjiunginesucbuldumaricikin", name="찌웅이네숯불두마리치킨", logo_url=""),
+        Brand(id="brand-ceogasjibpeulreoseukeijuncikin", name="처갓집플러스케이준치킨", logo_url=""),
+        Brand(id="brand-ceongnyeoncikin", name="청년치킨", logo_url=""),
+        Brand(id="brand-cireucireu", name="치르치르", logo_url=""),
+        Brand(id="brand-cimaegking", name="치맥킹", logo_url=""),
+        Brand(id="brand-cikinbaengi", name="치킨뱅이", logo_url=""),
+        Brand(id="brand-cikinseonsaeng", name="치킨선생", logo_url=""),
+        Brand(id="brand-cikinpameoseu", name="치킨파머스", logo_url=""),
+        Brand(id="brand-cilcilkenteoki", name="칠칠켄터키", logo_url=""),
+        Brand(id="brand-keunson1cikin2pija", name="큰손1치킨2피자", logo_url=""),
+        Brand(id="brand-tugaijeu-two-guys", name="투가이즈(TWO GUYS)", logo_url=""),
+        Brand(id="brand-peurangkinsucbulyangnyeomguicikin", name="프랑킨숯불양념구이치킨", logo_url=""),
+        Brand(id="brand-heodaegu-daegutongdalg", name="허대구 대구통닭", logo_url=""),
+        Brand(id="brand-hocikin", name="호치킨", logo_url=""),
+        Brand(id="brand-hwaragbabekyucikin", name="화락바베큐치킨", logo_url=""),
+        Brand(id="brand-hulralra", name="훌랄라", logo_url=""),
+
     ]
+
+    default_menu_image = (
+        "https://lh3.googleusercontent.com/aida-public/AB6AXuCtHrpl_kdq1gxVSLR2xSgNEmvlM4PR0EMePlGa98ORm0cYIuXKHgr5ah2fnTQw9vGrx3WUjZWbYgqF-9htTsb_TkYd6V5h8F_HEe3Ef6IdcEe4VMk09rZOesy4DUjG3KEfopa0LrjFh2KgJgV27w4zC996dMPodcIszG49jIIXE-tvc6BKRfLZDHARlrl9ayQno11dAdFFdqeGByFQHiPlw2Zy2XZucbsN0w9mDQ_rWSMMJUXmGoHj4paV1636i0m4i21dq7kSraPY"
+    )
 
     menus = [
         Menu(
@@ -76,6 +154,272 @@ def seed_if_empty(db: Session):
             name="자메이카 통다리",
             image_url="https://lh3.googleusercontent.com/aida-public/AB6AXuCtHrpl_kdq1gxVSLR2xSgNEmvlM4PR0EMePlGa98ORm0cYIuXKHgr5ah2fnTQw9vGrx3WUjZWbYgqF-9htTsb_TkYd6V5h8F_HEe3Ef6IdcEe4VMk09rZOesy4DUjG3KEfopa0LrjFh2KgJgV27w4zC996dMPodcIszG49jIIXE-tvc6BKRfLZDHARlrl9ayQno11dAdFFdqeGByFQHiPlw2Zy2XZucbsN0w9mDQ_rWSMMJUXmGoHj4paV1636i0m4i21dq7kSraPY",
             category="구이",
+        ),
+        Menu(
+            id="menu-kyochon-redcombo",
+            brand_id="brand-kyochon",
+            name="레드콤보",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-kyochon-original",
+            brand_id="brand-kyochon",
+            name="교촌오리지날",
+            image_url=default_menu_image,
+            category="후라이드",
+        ),
+        Menu(
+            id="menu-goobne-gochubasa",
+            brand_id="brand-goobne",
+            name="고추바사삭",
+            image_url=default_menu_image,
+            category="구이",
+        ),
+        Menu(
+            id="menu-goobne-volcano",
+            brand_id="brand-goobne",
+            name="볼케이노",
+            image_url=default_menu_image,
+            category="구이",
+        ),
+        Menu(
+            id="menu-goobne-original",
+            brand_id="brand-goobne",
+            name="오리지널",
+            image_url=default_menu_image,
+            category="구이",
+        ),
+        Menu(
+            id="menu-nene-snowwing",
+            brand_id="brand-nene",
+            name="스노윙치킨",
+            image_url=default_menu_image,
+            category="후라이드",
+        ),
+        Menu(
+            id="menu-nene-shockinghot",
+            brand_id="brand-nene",
+            name="쇼킹핫치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-nene-fried",
+            brand_id="brand-nene",
+            name="후라이드치킨",
+            image_url=default_menu_image,
+            category="후라이드",
+        ),
+        Menu(
+            id="menu-cheogatjib-supreme",
+            brand_id="brand-cheogatjib",
+            name="슈프림양념치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-cheogatjib-fried",
+            brand_id="brand-cheogatjib",
+            name="후라이드치킨",
+            image_url=default_menu_image,
+            category="후라이드",
+        ),
+        Menu(
+            id="menu-cheogatjib-seasoned",
+            brand_id="brand-cheogatjib",
+            name="양념치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-puradak-blackalio",
+            brand_id="brand-puradak",
+            name="블랙알리오",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-puradak-gotchumayo",
+            brand_id="brand-puradak",
+            name="고추마요치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-puradak-blackalio-boneless",
+            brand_id="brand-puradak",
+            name="순살블랙알리오",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-60gye-gochu",
+            brand_id="brand-60gye",
+            name="고추치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-60gye-tiger",
+            brand_id="brand-60gye",
+            name="호랑이치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-60gye-crunch",
+            brand_id="brand-60gye",
+            name="크크크치킨",
+            image_url=default_menu_image,
+            category="후라이드",
+        ),
+        Menu(
+            id="menu-norang-fried",
+            brand_id="brand-norang",
+            name="노랑후라이드",
+            image_url=default_menu_image,
+            category="후라이드",
+        ),
+        Menu(
+            id="menu-norang-garlic",
+            brand_id="brand-norang",
+            name="알싸한마늘치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-norang-kkanpung",
+            brand_id="brand-norang",
+            name="깐풍치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-jadam-mapsyullang",
+            brand_id="brand-jadam",
+            name="맵슐랭치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-jadam-fried",
+            brand_id="brand-jadam",
+            name="후라이드치킨",
+            image_url=default_menu_image,
+            category="후라이드",
+        ),
+        Menu(
+            id="menu-jadam-seasoned",
+            brand_id="brand-jadam",
+            name="양념치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-pericana-seasoned",
+            brand_id="brand-pericana",
+            name="페리카나양념치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-pericana-fried",
+            brand_id="brand-pericana",
+            name="후라이드치킨",
+            image_url=default_menu_image,
+            category="후라이드",
+        ),
+        Menu(
+            id="menu-pericana-halfhalf",
+            brand_id="brand-pericana",
+            name="반반치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-toreore-garlic-hot-half",
+            brand_id="brand-toreore",
+            name="갈릭반핫양념반",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-toreore-o-gok",
+            brand_id="brand-toreore",
+            name="오곡후라이드",
+            image_url=default_menu_image,
+            category="후라이드",
+        ),
+        Menu(
+            id="menu-toreore-hot-seasoned",
+            brand_id="brand-toreore",
+            name="핫양념치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-hosigi-fried",
+            brand_id="brand-hosigi",
+            name="후라이드치킨",
+            image_url=default_menu_image,
+            category="후라이드",
+        ),
+        Menu(
+            id="menu-hosigi-seasoned",
+            brand_id="brand-hosigi",
+            name="양념치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-hosigi-soy",
+            brand_id="brand-hosigi",
+            name="간장치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-mexicana-fried",
+            brand_id="brand-mexicana",
+            name="후라이드치킨",
+            image_url=default_menu_image,
+            category="후라이드",
+        ),
+        Menu(
+            id="menu-mexicana-seasoned",
+            brand_id="brand-mexicana",
+            name="양념치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-mexicana-spicy-seasoned",
+            brand_id="brand-mexicana",
+            name="매운양념치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-kkanbu-crispy",
+            brand_id="brand-kkanbu",
+            name="크리스피치킨",
+            image_url=default_menu_image,
+            category="후라이드",
+        ),
+        Menu(
+            id="menu-kkanbu-garlic-soy",
+            brand_id="brand-kkanbu",
+            name="마늘간장치킨",
+            image_url=default_menu_image,
+            category="양념",
+        ),
+        Menu(
+            id="menu-kkanbu-boneless",
+            brand_id="brand-kkanbu",
+            name="순살치킨",
+            image_url=default_menu_image,
+            category="후라이드",
         ),
     ]
 
@@ -239,10 +583,22 @@ def seed_if_empty(db: Session):
         ),
     ]
 
-    db.add_all(brands)
-    db.add_all(menus)
-    db.add_all(stores)
-    db.add_all(brand_menu_aggregates)
-    db.add_all(store_aggregates)
-    db.add_all(reviews)
+    existing_brand_ids = set(db.scalars(select(Brand.id)).all())
+    existing_menu_ids = set(db.scalars(select(Menu.id)).all())
+    existing_store = db.execute(select(Store.id)).first()
+    existing_brand_aggregate = db.execute(select(BrandMenuAggregate.id)).first()
+    existing_store_aggregate = db.execute(select(StoreAggregate.id)).first()
+    existing_review = db.execute(select(Review.id)).first()
+
+    db.add_all([brand for brand in brands if brand.id not in existing_brand_ids])
+    db.add_all([menu for menu in menus if menu.id not in existing_menu_ids])
+
+    if not existing_store:
+        db.add_all(stores)
+    if not existing_brand_aggregate:
+        db.add_all(brand_menu_aggregates)
+    if not existing_store_aggregate:
+        db.add_all(store_aggregates)
+    if not existing_review:
+        db.add_all(reviews)
     db.commit()
