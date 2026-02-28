@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:front/app/write_chicken_review_button.dart';
 import 'package:front/core/constants/app_colors.dart';
+import 'package:front/core/constants/rating_dimensions.dart';
 import 'package:front/presentation/widgets/rating_slider.dart';
 import 'package:front/domain/entities/brand.dart';
 import 'package:front/domain/entities/menu.dart';
@@ -31,13 +33,10 @@ class ReviewWritePage extends ConsumerStatefulWidget {
 }
 
 class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
-  double crispy = 3.0;
-  double juicy = 3.0;
-  double salty = 3.0;
-  double oil = 3.0;
-  double chickenQuality = 3.0;
-  double fryQuality = 3.0;
-  double portion = 3.0;
+  List<String> _activeDimensions = dimensionsForCategory(null);
+  Map<String, double> _scores = {
+    for (final key in dimensionsForCategory(null)) key: 3.0,
+  };
   double overall = 3.0;
   List<Brand> _brands = [];
   Brand? _selectedBrand;
@@ -70,11 +69,9 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
       final repository = ref.read(menuRepositoryProvider);
       final brands = await repository.fetchBrands();
       final matched = widget.brandId == null || widget.brandId!.isEmpty
-          ? _matchBrand(brands, widget.storeName ?? '')
-          : brands.firstWhere(
-              (brand) => brand.id == widget.brandId,
-              orElse: () => brands.first,
-            );
+          ? (_matchBrand(brands, widget.storeName ?? '') ??
+                _findBrandById(brands, 'brand-local'))
+          : _findBrandById(brands, widget.brandId!) ?? brands.first;
       setState(() {
         _brands = brands;
         _selectedBrand = matched;
@@ -101,6 +98,13 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
     return null;
   }
 
+  Brand? _findBrandById(List<Brand> brands, String brandId) {
+    for (final brand in brands) {
+      if (brand.id == brandId) return brand;
+    }
+    return null;
+  }
+
   Future<void> _loadMenus(String brandId) async {
     setState(() {
       _loadingMenus = true;
@@ -123,6 +127,7 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
         _menus = menus;
         _selectedMenu = selectedMenu;
         _menuSearchController.text = selectedMenu?.name ?? '';
+        _syncActiveDimensions(selectedMenu?.category);
       });
     } catch (_) {
       setState(() {
@@ -169,13 +174,7 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
           address: widget.address ?? '',
           brandId: _selectedBrand!.id,
           menuName: selectedMenu.name,
-          crispy: crispy,
-          juicy: juicy,
-          salty: salty,
-          oil: oil,
-          chickenQuality: chickenQuality,
-          fryQuality: fryQuality,
-          portion: portion,
+          scores: _scores,
           overall: overall,
           comment: _commentController.text.trim(),
         ),
@@ -198,16 +197,26 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
   }
 
   double _calculateOverall() {
-    final total =
-        crispy + juicy + salty + oil + chickenQuality + fryQuality + portion;
-    return total / 7;
+    if (_scores.isEmpty) return 0;
+    final total = _scores.values.reduce((a, b) => a + b);
+    return total / _scores.length;
   }
 
-  void _updateScore(void Function() updater) {
+  void _updateScore(String key, double value) {
     setState(() {
-      updater();
+      _scores[key] = value;
       overall = _calculateOverall();
     });
+  }
+
+  void _syncActiveDimensions(String? category) {
+    final next = dimensionsForCategory(category);
+    _activeDimensions = next;
+    _scores = {
+      for (final key in next)
+        key: _scores.containsKey(key) ? _scores[key]! : 3.0,
+    };
+    overall = _calculateOverall();
   }
 
   Future<bool> _confirmBrandChange(Brand nextBrand) async {
@@ -245,7 +254,13 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
         title: const Text('리뷰 작성'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+              return;
+            }
+            context.go('/ranking');
+          },
         ),
       ),
       body: SafeArea(
@@ -289,7 +304,7 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                         ],
                         const SizedBox(height: 8),
                         DropdownButtonFormField<Brand>(
-                          value: _selectedBrand,
+                          initialValue: _selectedBrand,
                           items: _brands
                               .map(
                                 (brand) => DropdownMenuItem(
@@ -298,7 +313,8 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                                 ),
                               )
                               .toList(),
-                          onChanged: widget.brandId != null &&
+                          onChanged:
+                              widget.brandId != null &&
                                   widget.brandId!.isNotEmpty
                               ? null
                               : (brand) async {
@@ -311,6 +327,7 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                                     _lastConfirmedBrand = brand;
                                     _selectedMenu = null;
                                     _menuSearchController.clear();
+                                    _syncActiveDimensions(null);
                                   });
                                   _loadMenus(brand.id);
                                 },
@@ -329,8 +346,9 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                         const SizedBox(height: 8),
                         Autocomplete<Menu>(
                           optionsBuilder: (textEditingValue) {
-                            final query =
-                                textEditingValue.text.trim().toLowerCase();
+                            final query = textEditingValue.text
+                                .trim()
+                                .toLowerCase();
                             if (query.isEmpty) return _menus;
                             return _menus.where(
                               (menu) => menu.name.toLowerCase().contains(query),
@@ -340,44 +358,49 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                           onSelected: (menu) {
                             setState(() {
                               _selectedMenu = menu;
+                              _syncActiveDimensions(menu.category);
                             });
                             _menuSearchController.text = menu.name;
                           },
                           fieldViewBuilder:
                               (context, controller, focusNode, onSubmitted) {
-                            if (controller.text != _menuSearchController.text) {
-                              controller.value = _menuSearchController.value;
-                            }
-                            return TextField(
-                              controller: controller,
-                              focusNode: focusNode,
-                              decoration: InputDecoration(
-                                hintText: _loadingMenus
-                                    ? '메뉴 불러오는 중...'
-                                    : '메뉴 검색 후 선택',
-                                helperText: '목록에서 선택한 메뉴만 제출할 수 있어요.',
-                                filled: true,
-                                fillColor: Colors.white,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: AppColors.cardBorder,
-                                  ),
-                                ),
-                              ),
-                              onChanged: (value) {
-                                _menuSearchController.value = controller.value;
-                                final selected = _selectedMenu;
-                                if (selected != null &&
-                                    selected.name != value) {
-                                  setState(() {
-                                    _selectedMenu = null;
-                                  });
+                                if (controller.text !=
+                                    _menuSearchController.text) {
+                                  controller.value =
+                                      _menuSearchController.value;
                                 }
+                                return TextField(
+                                  controller: controller,
+                                  focusNode: focusNode,
+                                  decoration: InputDecoration(
+                                    hintText: _loadingMenus
+                                        ? '메뉴 불러오는 중...'
+                                        : '메뉴 검색 후 선택',
+                                    helperText: '목록에서 선택한 메뉴만 제출할 수 있어요.',
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: AppColors.cardBorder,
+                                      ),
+                                    ),
+                                  ),
+                                  onChanged: (value) {
+                                    _menuSearchController.value =
+                                        controller.value;
+                                    final selected = _selectedMenu;
+                                    if (selected != null &&
+                                        selected.name != value) {
+                                      setState(() {
+                                        _selectedMenu = null;
+                                        _syncActiveDimensions(null);
+                                      });
+                                    }
+                                  },
+                                  onSubmitted: (_) => onSubmitted(),
+                                );
                               },
-                              onSubmitted: (_) => onSubmitted(),
-                            );
-                          },
                           optionsViewBuilder: (context, onSelected, options) {
                             final list = options.toList(growable: false);
                             if (list.isEmpty) {
@@ -446,46 +469,15 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  RatingSlider(
-                    label: '바삭함',
-                    value: crispy,
-                    onChanged: (v) => _updateScore(() => crispy = v),
-                  ),
-                  const SizedBox(height: 8),
-                  RatingSlider(
-                    label: '육즙',
-                    value: juicy,
-                    onChanged: (v) => _updateScore(() => juicy = v),
-                  ),
-                  const SizedBox(height: 8),
-                  RatingSlider(
-                    label: '염도',
-                    value: salty,
-                    onChanged: (v) => _updateScore(() => salty = v),
-                  ),
-                  const SizedBox(height: 8),
-                  RatingSlider(
-                    label: '기름상태',
-                    value: oil,
-                    onChanged: (v) => _updateScore(() => oil = v),
-                  ),
-                  const SizedBox(height: 8),
-                  RatingSlider(
-                    label: '닭품질',
-                    value: chickenQuality,
-                    onChanged: (v) => _updateScore(() => chickenQuality = v),
-                  ),
-                  const SizedBox(height: 8),
-                  RatingSlider(
-                    label: '튀김완성도',
-                    value: fryQuality,
-                    onChanged: (v) => _updateScore(() => fryQuality = v),
-                  ),
-                  const SizedBox(height: 8),
-                  RatingSlider(
-                    label: '양',
-                    value: portion,
-                    onChanged: (v) => _updateScore(() => portion = v),
+                  ..._activeDimensions.expand(
+                    (key) => [
+                      RatingSlider(
+                        label: ratingLabel(key),
+                        value: _scores[key] ?? 3.0,
+                        onChanged: (v) => _updateScore(key, v),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   RatingSlider(
@@ -509,29 +501,27 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  OutlinedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.add_a_photo),
-                    label: const Text('사진 추가'),
-                  ),
+                  // OutlinedButton.icon(
+                  //   onPressed: () {},
+                  //   icon: const Icon(Icons.add_a_photo),
+                  //   label: const Text('사진 추가'),
+                  // ),
                   if (_submitError != null) ...[
                     const SizedBox(height: 10),
-                    Text(_submitError!,
-                        style: const TextStyle(color: Colors.red)),
+                    Text(
+                      _submitError!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
                   ],
                   const SizedBox(height: 24),
                 ],
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _isSubmitting ? null : _submitReview,
-                  icon: const Icon(Icons.send),
-                  label: Text(_isSubmitting ? '제출 중...' : '리뷰 제출'),
-                ),
+              padding: const EdgeInsets.all(16.0),
+              child: WriteChickenReviewButton(
+                onPressed: _isSubmitting ? () {} : _submitReview,
+                text: _isSubmitting ? '제출 중...' : '리뷰 제출',
               ),
             ),
           ],

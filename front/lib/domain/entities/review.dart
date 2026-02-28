@@ -4,13 +4,8 @@ class Review {
   final String storeName;
   final String brandName;
   final String menuName;
-  final double crispy;
-  final double juicy;
-  final double salty;
-  final double oil;
-  final double chickenQuality;
-  final double fryQuality;
-  final double portion;
+  final String menuCategory;
+  final Map<String, double> scores;
   final double overall;
   final String comment;
   final DateTime createdAt;
@@ -20,13 +15,8 @@ class Review {
     required this.storeName,
     required this.brandName,
     required this.menuName,
-    required this.crispy,
-    required this.juicy,
-    required this.salty,
-    required this.oil,
-    required this.chickenQuality,
-    required this.fryQuality,
-    required this.portion,
+    required this.menuCategory,
+    required this.scores,
     required this.overall,
     required this.comment,
     required this.createdAt,

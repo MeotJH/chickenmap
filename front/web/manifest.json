@@ -1,11 +1,11 @@
 {
-    "name": "Painting Diary",
-    "short_name": "Painting Diary",
+    "name": "치킨맵",
+    "short_name": "치킨맵",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "치킨맵 - 치킨 맛집 지도와 리뷰 랭킹",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

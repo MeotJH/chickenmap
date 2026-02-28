@@ -60,35 +60,34 @@ StoreSummary _storeFromJson(Map<String, dynamic> json) {
 }
 
 RatingBreakdown _breakdownFromJson(Map<String, dynamic> json) {
+  final scores = _scoresFromJson(json['scores']);
   return RatingBreakdown(
-    crispy: (json['crispy'] as num?)?.toDouble() ?? 0,
-    juicy: (json['juicy'] as num?)?.toDouble() ?? 0,
-    salty: (json['salty'] as num?)?.toDouble() ?? 0,
-    oil: (json['oil'] as num?)?.toDouble() ?? 0,
-    chickenQuality: (json['chickenQuality'] as num?)?.toDouble() ?? 0,
-    fryQuality: (json['fryQuality'] as num?)?.toDouble() ?? 0,
-    portion: (json['portion'] as num?)?.toDouble() ?? 0,
+    scores: scores,
     overall: (json['overall'] as num?)?.toDouble() ?? 0,
   );
 }
 
 Review _reviewFromJson(Map<String, dynamic> json) {
+  final scores = _scoresFromJson(json['scores']);
   return Review(
     id: json['id'] as String? ?? '',
     storeName: json['storeName'] as String? ?? '',
     brandName: json['brandName'] as String? ?? '',
     menuName: json['menuName'] as String? ?? '',
-    crispy: (json['crispy'] as num?)?.toDouble() ?? 0,
-    juicy: (json['juicy'] as num?)?.toDouble() ?? 0,
-    salty: (json['salty'] as num?)?.toDouble() ?? 0,
-    oil: (json['oil'] as num?)?.toDouble() ?? 0,
-    chickenQuality: (json['chickenQuality'] as num?)?.toDouble() ?? 0,
-    fryQuality: (json['fryQuality'] as num?)?.toDouble() ?? 0,
-    portion: (json['portion'] as num?)?.toDouble() ?? 0,
+    menuCategory: json['menuCategory'] as String? ?? '',
+    scores: scores,
     overall: (json['overall'] as num?)?.toDouble() ?? 0,
     comment: json['comment'] as String? ?? '',
     createdAt: DateTime.parse(
       json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
     ),
   );
+}
+
+Map<String, double> _scoresFromJson(dynamic raw) {
+  if (raw is! Map<String, dynamic>) return const {};
+  return {
+    for (final entry in raw.entries)
+      entry.key: (entry.value as num?)?.toDouble() ?? 0,
+  };
 }

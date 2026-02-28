@@ -353,11 +353,22 @@ class _BrandMeta extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 12,
-          backgroundImage: hasLogo ? NetworkImage(brandLogoUrl) : null,
           backgroundColor: Colors.white,
-          onBackgroundImageError: hasLogo ? (_, __) {} : null,
           child: hasLogo
-              ? null
+              ? ClipOval(
+                  child: Image.network(
+                    brandLogoUrl,
+                    width: 24,
+                    height: 24,
+                    fit: BoxFit.cover,
+                    webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.restaurant,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                )
               : const Icon(
                   Icons.restaurant,
                   size: 14,
@@ -418,6 +429,7 @@ class _NetworkImageWithFallback extends StatelessWidget {
       Image.network(
         url,
         fit: fit,
+        webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
         errorBuilder: (context, error, stackTrace) => Image.asset(
           fallbackAssetPath,
           fit: fit,

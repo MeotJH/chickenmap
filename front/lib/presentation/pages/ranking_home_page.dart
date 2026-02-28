@@ -21,6 +21,7 @@ class _RankingHomePageState extends ConsumerState<RankingHomePage> {
   final _searchController = TextEditingController();
   String _query = '';
   String _selectedCategory = '전체';
+  static const _defaultCategory = '전체';
 
   @override
   void dispose() {
@@ -31,7 +32,7 @@ class _RankingHomePageState extends ConsumerState<RankingHomePage> {
   List<BrandMenuRanking> _filterRankings(List<BrandMenuRanking> items) {
     final query = _query.trim().toLowerCase();
     var filtered = items;
-    if (_selectedCategory != '전체') {
+    if (_selectedCategory != _defaultCategory) {
       final category = _selectedCategory.toLowerCase();
       filtered = filtered
           .where((item) => item.category.toLowerCase() == category)
@@ -44,10 +45,43 @@ class _RankingHomePageState extends ConsumerState<RankingHomePage> {
     }).toList();
   }
 
+  List<String> _categoryOptions(List<BrandMenuRanking> items) {
+    final preferredOrder = <String>[
+      '후라이드',
+      '양념',
+      '구이',
+      '간장',
+      '시즈닝',
+      '마늘',
+      '파닭',
+      '닭강정',
+      '쌈',
+      '양파',
+      '기타',
+    ];
+
+    final categories = <String>{
+      for (final item in items)
+        item.category.trim().isEmpty ? '기타' : item.category.trim(),
+    };
+    final ordered = <String>[
+      ...preferredOrder.where(categories.contains),
+      ...categories.where((c) => !preferredOrder.contains(c)).toList()..sort(),
+    ];
+    return [_defaultCategory, ...ordered];
+  }
+
   @override
   // 랭킹 리스트와 상단 UI를 구성한다.
   Widget build(BuildContext context) {
     final rankings = ref.watch(rankingListProvider);
+    final categories = rankings.maybeWhen(
+      data: _categoryOptions,
+      orElse: () => const [_defaultCategory],
+    );
+    final selectedCategory = categories.contains(_selectedCategory)
+        ? _selectedCategory
+        : _defaultCategory;
 
     return Scaffold(
       body: SafeArea(
@@ -55,7 +89,8 @@ class _RankingHomePageState extends ConsumerState<RankingHomePage> {
           children: [
             _RankingHeader(
               controller: _searchController,
-              selectedCategory: _selectedCategory,
+              categories: categories,
+              selectedCategory: selectedCategory,
               onSearchChanged: (value) => setState(() => _query = value),
               onCategorySelected: (value) =>
                   setState(() => _selectedCategory = value),
@@ -109,12 +144,14 @@ class _RankingHomePageState extends ConsumerState<RankingHomePage> {
 // 랭킹 홈 상단 영역을 구성한다.
 class _RankingHeader extends StatelessWidget {
   final TextEditingController controller;
+  final List<String> categories;
   final String selectedCategory;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<String> onCategorySelected;
 
   const _RankingHeader({
     required this.controller,
+    required this.categories,
     required this.selectedCategory,
     required this.onSearchChanged,
     required this.onCategorySelected,
@@ -180,30 +217,13 @@ class _RankingHeader extends StatelessWidget {
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                AppFilterChip(
-                  label: '전체',
-                  selected: selectedCategory == '전체',
-                  onSelected: onCategorySelected,
-                  width: 56,
-                ),
-                AppFilterChip(
-                  label: '후라이드',
-                  selected: selectedCategory == '후라이드',
-                  onSelected: onCategorySelected,
-                  width: 56,
-                ),
-                AppFilterChip(
-                  label: '양념',
-                  selected: selectedCategory == '양념',
-                  onSelected: onCategorySelected,
-                  width: 56,
-                ),
-                AppFilterChip(
-                  label: '구이',
-                  selected: selectedCategory == '구이',
-                  onSelected: onCategorySelected,
-                  width: 56,
-                ),
+                for (final category in categories)
+                  AppFilterChip(
+                    label: category,
+                    selected: selectedCategory == category,
+                    onSelected: onCategorySelected,
+                    width: null,
+                  ),
               ],
             ),
           ),

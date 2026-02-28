@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:front/core/constants/app_colors.dart';
+import 'package:front/core/constants/rating_dimensions.dart';
 import 'package:front/core/utils/formatters.dart';
 import 'package:front/domain/entities/review.dart';
 import 'package:front/presentation/providers/review_providers.dart';
@@ -47,6 +48,9 @@ class _ReviewDetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final entries = review.scores.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
     return ListView(
       children: [
         Text(
@@ -75,13 +79,9 @@ class _ReviewDetailBody extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        _ScoreRow(label: '바삭함', value: review.crispy),
-        _ScoreRow(label: '육즙', value: review.juicy),
-        _ScoreRow(label: '염도', value: review.salty),
-        _ScoreRow(label: '기름상태', value: review.oil),
-        _ScoreRow(label: '닭품질', value: review.chickenQuality),
-        _ScoreRow(label: '튀김완성도', value: review.fryQuality),
-        _ScoreRow(label: '양', value: review.portion),
+        ...entries.map(
+          (entry) => _ScoreRow(label: ratingLabel(entry.key), value: entry.value),
+        ),
         const SizedBox(height: 16),
         const Text(
           '코멘트',

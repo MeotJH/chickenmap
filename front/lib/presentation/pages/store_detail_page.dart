@@ -1,6 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:front/app/write_chicken_review_button.dart';
 import 'package:front/core/constants/app_sizes.dart';
+import 'package:front/core/constants/rating_dimensions.dart';
 import 'package:front/presentation/providers/store_providers.dart';
 import 'package:front/presentation/widgets/review_card.dart';
 import 'package:front/presentation/widgets/score_row.dart';
@@ -11,10 +13,13 @@ import 'package:go_router/go_router.dart';
 class StoreDetailPage extends ConsumerWidget {
   final String storeId;
 
-  const StoreDetailPage({
-    super.key,
-    required this.storeId,
-  });
+  const StoreDetailPage({super.key, required this.storeId});
+
+  List<MapEntry<String, double>> _scoreEntries(Map<String, double> scores) {
+    final entries = scores.entries.toList();
+    entries.sort((a, b) => b.value.compareTo(a.value));
+    return entries;
+  }
 
   @override
   // 지점 상세 정보와 리뷰를 구성한다.
@@ -42,14 +47,17 @@ class StoreDetailPage extends ConsumerWidget {
                 children: [
                   Text(
                     data.name,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(data.address),
                 ],
               ),
               loading: () => const LinearProgressIndicator(),
-              error: (_, __) => const Text('지점 정보를 불러오지 못했어요.'),
+              error: (_, _) => const Text('지점 정보를 불러오지 못했어요.'),
             ),
             const SizedBox(height: 16),
             Container(
@@ -62,25 +70,24 @@ class StoreDetailPage extends ConsumerWidget {
               child: breakdown.when(
                 data: (data) => Column(
                   children: [
-                    ScoreRow(label: '바삭함', value: data.crispy),
-                    const SizedBox(height: 8),
-                    ScoreRow(label: '육즙', value: data.juicy),
-                    const SizedBox(height: 8),
-                    ScoreRow(label: '염도', value: data.salty),
-                    const SizedBox(height: 8),
-                    ScoreRow(label: '기름상태', value: data.oil),
-                    const SizedBox(height: 8),
-                    ScoreRow(label: '닭품질', value: data.chickenQuality),
-                    const SizedBox(height: 8),
-                    ScoreRow(label: '튀김완성도', value: data.fryQuality),
-                    const SizedBox(height: 8),
-                    ScoreRow(label: '양', value: data.portion),
+                    ..._scoreEntries(data.scores).expand(
+                      (entry) => [
+                        ScoreRow(
+                          label: ratingLabel(entry.key),
+                          value: entry.value,
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                    ),
                     const Divider(height: 24),
                     ScoreRow(label: '총점', value: data.overall),
                   ],
                 ),
-                loading: () => const SizedBox(height: 120, child: Center(child: CircularProgressIndicator())),
-                error: (_, __) => const Text('점수 정보를 불러오지 못했어요.'),
+                loading: () => const SizedBox(
+                  height: 120,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (_, _) => const Text('점수 정보를 불러오지 못했어요.'),
               ),
             ),
             const SizedBox(height: 24),
@@ -89,22 +96,21 @@ class StoreDetailPage extends ConsumerWidget {
             reviews.when(
               data: (items) => Column(
                 children: items
-                    .map((review) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: ReviewCard(review: review),
-                        ))
+                    .map(
+                      (review) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: ReviewCard(review: review),
+                      ),
+                    )
                     .toList(),
               ),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Text('리뷰를 불러오지 못했어요.'),
+              error: (_, _) => const Text('리뷰를 불러오지 못했어요.'),
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => context.go('/review/write'),
-                child: const Text('이 지점에서 먹은 치킨 리뷰 남기기'),
-              ),
+            WriteChickenReviewButton(
+              onPressed: () => context.go('/review/write'),
+              text: '이 지점에서 먹은 치킨 리뷰 남기기',
             ),
           ],
         ),
