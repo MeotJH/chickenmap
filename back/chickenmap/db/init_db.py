@@ -11,6 +11,7 @@ from chickenmap.models.entities import (
     BrandMenuAggregate,
     StoreAggregate,
     Review,
+    User,
 )
 from chickenmap.core.rating_dimensions import scores_json_dumps
 
@@ -32,7 +33,7 @@ def _migrate_scores_json_columns(db: Session):
         return
 
     targets = {
-        "review": ("scores_json", "overall"),
+        "review": ("scores_json", "overall", "user_id"),
         "brand_menu_aggregate": ("scores_json",),
         "store_aggregate": ("scores_json", "counts_json"),
     }
@@ -49,6 +50,13 @@ def _migrate_scores_json_columns(db: Session):
                     text(
                         f"ALTER TABLE {table_name} "
                         "ADD COLUMN overall FLOAT NOT NULL DEFAULT 0"
+                    )
+                )
+            elif column_name == "user_id":
+                db.execute(
+                    text(
+                        f"ALTER TABLE {table_name} "
+                        "ADD COLUMN user_id VARCHAR NOT NULL DEFAULT 'user-seed'"
                     )
                 )
             else:
@@ -2024,9 +2032,21 @@ def seed_if_empty(db: Session):
     ]
 
     now = datetime.now()
+    seed_users = [
+        User(
+            id="user-seed",
+            email="seed@chickenmap.local",
+            display_name="Seed User",
+            photo_url="",
+            provider="google",
+            created_at=now,
+            updated_at=now,
+        )
+    ]
     reviews = [
         Review(
             id="review-1",
+            user_id="user-seed",
             store_id="store-1",
             brand_id="brand-bbq",
             menu_id="menu-bbq-fried",
@@ -2037,6 +2057,7 @@ def seed_if_empty(db: Session):
         ),
         Review(
             id="review-2",
+            user_id="user-seed",
             store_id="store-1",
             brand_id="brand-bbq",
             menu_id="menu-bbq-jamaica",
@@ -2048,12 +2069,14 @@ def seed_if_empty(db: Session):
     ]
 
     existing_brand_ids = set(db.scalars(select(Brand.id)).all())
+    existing_user_ids = set(db.scalars(select(User.id)).all())
     existing_store = db.execute(select(Store.id)).first()
     existing_brand_aggregate = db.execute(select(BrandMenuAggregate.id)).first()
     existing_store_aggregate = db.execute(select(StoreAggregate.id)).first()
     existing_review = db.execute(select(Review.id)).first()
 
     db.add_all([brand for brand in brands if brand.id not in existing_brand_ids])
+    db.add_all([user for user in seed_users if user.id not in existing_user_ids])
 
     # 메뉴는 id 또는 (brand_id, name) 기준으로 upsert한다.
     existing_menus = db.scalars(select(Menu)).all()

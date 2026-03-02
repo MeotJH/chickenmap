@@ -1,10 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from chickenmap.db.session import get_db
 from chickenmap.models.entities import Menu
 from chickenmap.core.rating_dimensions import compute_overall, scores_json_loads
+from chickenmap.services.auth_service import (
+    resolve_auth_user,
+    upsert_user,
+    get_user,
+    AuthUser,
+)
 from chickenmap.schemas.chickenmap import (
+  AuthOut,
   BrandMenuRankingOut,
   BrandOut,
   MenuOut,
@@ -38,6 +45,34 @@ def _scores_from_snapshot(
 ) -> dict[str, float]:
     # scores_json 스냅샷을 안전하게 역직렬화한다.
     return scores_json_loads(scores_json)
+
+
+def _require_auth_user(
+    authorization: str | None = Header(default=None),
+) -> AuthUser:
+    auth_user = resolve_auth_user(
+        authorization=authorization,
+    )
+    if auth_user is None:
+        raise HTTPException(status_code=401, detail="Login required")
+    return auth_user
+
+
+@router.post("/auth", response_model=AuthOut)
+def sync_user(
+    auth_user: AuthUser = Depends(_require_auth_user),
+    db: Session = Depends(get_db),
+):
+    # 로그인 사용자를 동기화하고 반환한다.
+    user = upsert_user(db, auth_user)
+    db.commit()
+    return AuthOut(
+        uid=user.id,
+        email=user.email,
+        name=user.display_name,
+        picture=user.photo_url,
+        provider=user.provider,
+    )
 
 
 @router.get("/rankings", response_model=list[BrandMenuRankingOut])
@@ -176,9 +211,12 @@ def get_store_reviews(store_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/reviews/me", response_model=list[ReviewOut])
-def get_my_reviews(db: Session = Depends(get_db)):
+def get_my_reviews(
+    auth_user: AuthUser = Depends(_require_auth_user),
+    db: Session = Depends(get_db),
+):
     # 내 리뷰 리스트를 반환한다.
-    rows = review_service.get_my_reviews(db)
+    rows = review_service.get_my_reviews(db, auth_user.uid)
     return [
         ReviewOut(
             id=review.id,
@@ -216,10 +254,21 @@ def get_review(review_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/reviews", response_model=ReviewOut)
-def create_review(payload: ReviewCreateIn, db: Session = Depends(get_db)):
+def create_review(
+    payload: ReviewCreateIn,
+    auth_user: AuthUser = Depends(_require_auth_user),
+    db: Session = Depends(get_db),
+):
     # 리뷰를 생성하고 반환한다.
+    user = get_user(db, auth_user.uid)
+    if user is None:
+        raise HTTPException(status_code=401, detail="User session not initialized")
     try:
-        review, store_name, brand_name, menu_name = review_service.create_review(db, payload)
+        review, store_name, brand_name, menu_name = review_service.create_review(
+            db,
+            payload,
+            auth_user.uid,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     menu = db.get(Menu, review.menu_id)

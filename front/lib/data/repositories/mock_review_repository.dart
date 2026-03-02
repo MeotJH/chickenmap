@@ -1,6 +1,7 @@
-﻿import 'package:front/data/mock/mock_data.dart';
-import 'package:front/domain/entities/review.dart';
+import 'package:front/data/mock/mock_data.dart';
 import 'package:front/data/remote/review_api.dart';
+import 'package:front/domain/entities/auth_context.dart';
+import 'package:front/domain/entities/review.dart';
 import 'package:front/domain/repositories/review_repository.dart';
 
 // 목업 리뷰 저장소 구현체다.
@@ -11,7 +12,7 @@ class MockReviewRepository implements ReviewRepository {
 
   @override
   // 내 리뷰를 목업 데이터로 반환한다.
-  Future<List<Review>> fetchMyReviews() async {
+  Future<List<Review>> fetchMyReviews({AuthContext? auth}) async {
     return _dataSource.reviews();
   }
 
@@ -21,7 +22,7 @@ class MockReviewRepository implements ReviewRepository {
   }
 
   @override
-  Future<Review> createReview(ReviewCreateRequest payload) async {
+  Future<Review> createReview(ReviewCreateRequest payload, {AuthContext? auth}) async {
     return _dataSource.reviews().first;
   }
 }

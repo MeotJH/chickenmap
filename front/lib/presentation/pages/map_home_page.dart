@@ -34,6 +34,7 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
   bool _isSearching = false;
   String? _searchError;
   StoreSummary? _selectedStore;
+  PlaceSearchResult? _selectedPlace;
   NaverMapController? _mapController;
   double _mapLat = AppLocationController.defaultLat;
   double _mapLng = AppLocationController.defaultLng;
@@ -97,9 +98,36 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
     context.push(uri.toString());
   }
 
+  String? _selectedPlaceMarkerId() {
+    final selected = _selectedPlace;
+    if (selected == null) return null;
+    return 'place-${selected.mapx}-${selected.mapy}';
+  }
+
+  (double lat, double lng)? _coordsFromPlace(PlaceSearchResult item) {
+    final lat = item.mapy / 10000000.0;
+    final lng = item.mapx / 10000000.0;
+    if (lat.abs() > 90 || lng.abs() > 180) return null;
+    return (lat, lng);
+  }
+
+  Future<void> _selectSearchResult(PlaceSearchResult item) async {
+    final coords = _coordsFromPlace(item);
+    if (coords == null) return;
+    setState(() {
+      _selectedStore = null;
+      _selectedPlace = item;
+      _results = const [];
+      _searchError = null;
+      _searchController.text = item.name;
+    });
+    await _focusMapTo(coords.$1, coords.$2, zoom: 16);
+  }
+
   void _selectStore(StoreSummary store) {
     setState(() {
       _selectedStore = store;
+      _selectedPlace = null;
     });
     _focusStoreOnMap(store);
   }
@@ -239,6 +267,24 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
           ),
         )
         .toList();
+    final selectedPlace = _selectedPlace;
+    if (selectedPlace != null) {
+      final coords = _coordsFromPlace(selectedPlace);
+      if (coords != null) {
+        markers.add(
+          MapMarkerData(
+            id: _selectedPlaceMarkerId()!,
+            lat: coords.$1,
+            lng: coords.$2,
+            caption: selectedPlace.name,
+            description: selectedPlace.roadAddress.isNotEmpty
+                ? selectedPlace.roadAddress
+                : selectedPlace.address,
+            useDefaultMarker: true,
+          ),
+        );
+      }
+    }
     final storeById = {for (final store in storeItems) store.id: store};
 
     return Scaffold(
@@ -253,7 +299,7 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
               lng: _mapLng,
               zoom: 14,
               markers: markers,
-              selectedMarkerId: _selectedStore?.id,
+              selectedMarkerId: _selectedStore?.id ?? _selectedPlaceMarkerId(),
               onMarkerTap: (markerId) {
                 final store = storeById[markerId];
                 if (store == null) return;
@@ -318,7 +364,7 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
                           isLoading: _isSearching,
                           errorMessage: _searchError,
                           results: _results,
-                          onSelect: _openReviewWrite,
+                          onSelect: _selectSearchResult,
                         ),
                       ),
                     const SizedBox(height: 12),
@@ -498,6 +544,79 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
                         const Icon(Icons.chevron_right),
                       ],
                     ),
+                  ),
+                ),
+              ),
+            ),
+          if (_selectedStore == null && _selectedPlace != null)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: selectedCardBottom,
+              child: PointerInterceptor(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.cardBorder),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 12,
+                        offset: Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: AppColors.backgroundLight,
+                        child: const Icon(
+                          Icons.place,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _selectedPlace!.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _selectedPlace!.roadAddress.isNotEmpty
+                                  ? _selectedPlace!.roadAddress
+                                  : _selectedPlace!.address,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton(
+                        onPressed: () => _openReviewWrite(_selectedPlace!),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          minimumSize: const Size(64, 36),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        ),
+                        child: const Text('리뷰'),
+                      ),
+                    ],
                   ),
                 ),
               ),

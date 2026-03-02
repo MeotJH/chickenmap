@@ -27,14 +27,16 @@ Widget buildNaverMapViewImpl({
           id: marker.id,
           position: NLatLng(marker.lat, marker.lng),
         );
-        // Keep the default marker icon so tap hit-area remains reliable.
-        nMarker.setCaption(
-          const NOverlayCaption(
-            text: '\u{1F357}',
-            textSize: 18,
-            color: Colors.black,
-          ),
-        );
+        if (!marker.useDefaultMarker) {
+          // Keep the default marker icon so tap hit-area remains reliable.
+          nMarker.setCaption(
+            const NOverlayCaption(
+              text: '\u{1F357}',
+              textSize: 18,
+              color: Colors.black,
+            ),
+          );
+        }
         nMarker.setOnTapListener((overlay) {
           onMarkerTap?.call(marker.id);
         });

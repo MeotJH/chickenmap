@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:front/data/mock/mock_data.dart';
 import 'package:front/data/remote/ranking_api.dart';
 import 'package:front/data/repositories/remote_ranking_repository.dart';
+import 'package:front/data/remote/auth_api.dart';
 import 'package:front/data/remote/review_api.dart';
 import 'package:front/data/repositories/remote_review_repository.dart';
 import 'package:front/data/remote/store_api.dart';
@@ -105,6 +106,11 @@ final reviewApiProvider = Provider<ReviewApi>((ref) {
 // 랭킹 API 클라이언트를 제공한다.
 final rankingApiProvider = Provider<RankingApi>((ref) {
   return RankingApi();
+});
+
+// 인증 API 클라이언트를 제공한다.
+final authApiProvider = Provider<AuthApi>((ref) {
+  return AuthApi();
 });
 
 // 메뉴 API 클라이언트를 제공한다.

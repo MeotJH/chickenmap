@@ -7,13 +7,14 @@ from chickenmap.models.entities import Review, Store, Brand, Menu
 # 리뷰 관련 데이터 접근 계층이다.
 
 
-def fetch_my_reviews(db: Session):
-    # 내 리뷰 리스트를 위한 쿼리다. (현재는 전체 리뷰를 반환한다.)
+def fetch_my_reviews(db: Session, user_id: str):
+    # 내 리뷰 리스트를 위한 쿼리다.
     stmt = (
         select(Review, Store.name, Brand.name, Menu.name, Menu.category)
         .join(Store, Store.id == Review.store_id)
         .join(Brand, Brand.id == Review.brand_id)
         .join(Menu, Menu.id == Review.menu_id)
+        .where(Review.user_id == user_id)
         .order_by(Review.created_at.desc())
     )
     return db.execute(stmt).all()

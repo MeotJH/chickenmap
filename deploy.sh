@@ -105,6 +105,10 @@ deploy_backend() {
   ssh -i "$SSH_KEY_PATH" "${BACKEND_USER}@${BACKEND_HOST}" "
     set -euo pipefail
     cd '${BACKEND_REMOTE_DIR}'
+    HOST_PORT='${BACKEND_PORT_BIND%%:*}'
+    if [ \"\$HOST_PORT\" = \"${BACKEND_PORT_BIND}\" ]; then
+      HOST_PORT='${BACKEND_PORT_BIND}'
+    fi
     docker build -t '${BACKEND_IMAGE_NAME}' .
     docker rm -f '${BACKEND_CONTAINER_NAME}' || true
     docker run -d \
@@ -114,8 +118,20 @@ deploy_backend() {
       --env-file .env \
       -v '${BACKEND_REMOTE_DIR}/data:/app/data' \
       '${BACKEND_IMAGE_NAME}'
-    sleep 2
-    curl -fsS 'http://127.0.0.1:${BACKEND_PORT_BIND##*:}/api/chickenmap/rankings' >/dev/null
+    HEALTH_URL=\"http://127.0.0.1:\${HOST_PORT}/api/chickenmap/rankings\"
+    ok=0
+    for i in \$(seq 1 20); do
+      if curl -fsS \"\${HEALTH_URL}\" >/dev/null; then
+        ok=1
+        break
+      fi
+      sleep 1
+    done
+    if [ \"\$ok\" -ne 1 ]; then
+      echo \"[deploy] Health check failed: \${HEALTH_URL}\"
+      docker logs --tail 120 '${BACKEND_CONTAINER_NAME}' || true
+      exit 1
+    fi
     docker ps --filter name='${BACKEND_CONTAINER_NAME}' --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
   "
 

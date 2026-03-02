@@ -20,6 +20,19 @@ class Brand(Base):
     stores = relationship("Store", back_populates="brand")
 
 
+class User(Base):
+    # Firebase 로그인 사용자를 저장하는 테이블이다.
+    __tablename__ = "user"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), default="")
+    display_name: Mapped[str] = mapped_column(String(120), default="")
+    photo_url: Mapped[str] = mapped_column(String(1000), default="")
+    provider: Mapped[str] = mapped_column(String(40), default="google")
+    created_at: Mapped[datetime] = mapped_column(DateTime)
+    updated_at: Mapped[datetime] = mapped_column(DateTime)
+
+
 class Menu(Base):
     # 브랜드별 메뉴 정보를 저장하는 테이블이다.
     __tablename__ = "menu"
@@ -81,6 +94,7 @@ class Review(Base):
     __tablename__ = "review"
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("user.id"), index=True)
     store_id: Mapped[str] = mapped_column(ForeignKey("store.id"), index=True)
     brand_id: Mapped[str] = mapped_column(ForeignKey("brand.id"), index=True)
     menu_id: Mapped[str] = mapped_column(ForeignKey("menu.id"), index=True)

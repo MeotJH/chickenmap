@@ -17,6 +17,7 @@ cryptography==46.0.3
 dashscope==1.25.1
 exceptiongroup==1.3.0
 fastapi==0.121.2
+firebase-admin==7.1.0
 frozenlist==1.8.0
 h11==0.16.0
 idna==3.11

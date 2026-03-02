@@ -93,3 +93,12 @@ class ReviewCreateIn(BaseModel):
     scores: dict[str, float] = Field(default_factory=dict)
     overall: float = 0.0
     comment: str
+
+
+class AuthOut(BaseModel):
+    # 인증 사용자 응답 모델이다.
+    uid: str
+    email: str
+    name: str
+    picture: str
+    provider: str

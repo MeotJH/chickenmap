@@ -26,5 +26,5 @@ fi
 
 cp .env.production .env
 $FLUTTER_CMD pub get
-$FLUTTER_CMD build web --release
+$FLUTTER_CMD build web --release --pwa-strategy=none
 firebase deploy --only hosting

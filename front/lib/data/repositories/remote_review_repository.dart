@@ -1,4 +1,5 @@
 import 'package:front/data/remote/review_api.dart';
+import 'package:front/domain/entities/auth_context.dart';
 import 'package:front/domain/entities/review.dart';
 import 'package:front/domain/repositories/review_repository.dart';
 
@@ -9,8 +10,8 @@ class RemoteReviewRepository implements ReviewRepository {
   RemoteReviewRepository(this._api);
 
   @override
-  Future<List<Review>> fetchMyReviews() {
-    return _api.fetchMyReviews();
+  Future<List<Review>> fetchMyReviews({AuthContext? auth}) {
+    return _api.fetchMyReviews(auth: auth);
   }
 
   @override
@@ -19,7 +20,7 @@ class RemoteReviewRepository implements ReviewRepository {
   }
 
   @override
-  Future<Review> createReview(ReviewCreateRequest payload) {
-    return _api.createReview(payload);
+  Future<Review> createReview(ReviewCreateRequest payload, {AuthContext? auth}) {
+    return _api.createReview(payload, auth: auth);
   }
 }

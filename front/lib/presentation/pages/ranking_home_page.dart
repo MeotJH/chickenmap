@@ -4,6 +4,7 @@ import 'package:front/core/constants/app_sizes.dart';
 import 'package:front/core/constants/app_strings.dart';
 import 'package:front/domain/entities/brand_menu_ranking.dart';
 import 'package:front/presentation/providers/ranking_providers.dart';
+import 'package:front/presentation/providers/auth_providers.dart';
 import 'package:front/presentation/widgets/app_filter_chip.dart';
 import 'package:front/presentation/widgets/ranking_card.dart';
 import 'package:front/presentation/widgets/section_title.dart';
@@ -71,6 +72,31 @@ class _RankingHomePageState extends ConsumerState<RankingHomePage> {
     return [_defaultCategory, ...ordered];
   }
 
+  Future<void> _handleProfileMenuSelect(
+    BuildContext context,
+    _ProfileMenuAction action,
+  ) async {
+    switch (action) {
+      case _ProfileMenuAction.activity:
+        final user = ref.read(authStateProvider).asData?.value ??
+            ref.read(authControllerProvider).currentUser;
+        if (user == null) {
+          context.push('/auth');
+          return;
+        }
+        context.go('/activity');
+        break;
+      case _ProfileMenuAction.logout:
+        await ref.read(authControllerProvider).signOut();
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('로그아웃 되었어요.')));
+        context.go('/ranking');
+        break;
+    }
+  }
+
   @override
   // 랭킹 리스트와 상단 UI를 구성한다.
   Widget build(BuildContext context) {
@@ -94,6 +120,8 @@ class _RankingHomePageState extends ConsumerState<RankingHomePage> {
               onSearchChanged: (value) => setState(() => _query = value),
               onCategorySelected: (value) =>
                   setState(() => _selectedCategory = value),
+              onProfileMenuSelect: (action) =>
+                  _handleProfileMenuSelect(context, action),
             ),
             Expanded(
               child: Padding(
@@ -151,6 +179,7 @@ class _RankingHeader extends StatelessWidget {
   final String selectedCategory;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<String> onCategorySelected;
+  final ValueChanged<_ProfileMenuAction> onProfileMenuSelect;
 
   const _RankingHeader({
     required this.controller,
@@ -158,6 +187,7 @@ class _RankingHeader extends StatelessWidget {
     required this.selectedCategory,
     required this.onSearchChanged,
     required this.onCategorySelected,
+    required this.onProfileMenuSelect,
   });
 
   @override
@@ -193,8 +223,19 @@ class _RankingHeader extends StatelessWidget {
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () {},
+              PopupMenuButton<_ProfileMenuAction>(
+                tooltip: '프로필 메뉴',
+                onSelected: onProfileMenuSelect,
+                itemBuilder: (context) => const [
+                  PopupMenuItem<_ProfileMenuAction>(
+                    value: _ProfileMenuAction.activity,
+                    child: Text('내 활동'),
+                  ),
+                  PopupMenuItem<_ProfileMenuAction>(
+                    value: _ProfileMenuAction.logout,
+                    child: Text('로그아웃'),
+                  ),
+                ],
                 icon: const Icon(Icons.account_circle),
               ),
             ],
@@ -239,4 +280,9 @@ class _RankingHeader extends StatelessWidget {
       ),
     );
   }
+}
+
+enum _ProfileMenuAction {
+  activity,
+  logout,
 }

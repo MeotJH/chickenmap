@@ -22,9 +22,9 @@ from chickenmap.services import geocode_service
 LOCAL_BRAND_ID = "brand-local"
 
 
-def get_my_reviews(db: Session):
+def get_my_reviews(db: Session, user_id: str):
     # 내 리뷰 리스트를 반환한다.
-    return review_repository.fetch_my_reviews(db)
+    return review_repository.fetch_my_reviews(db, user_id)
 
 
 def get_review(db: Session, review_id: str):
@@ -32,7 +32,7 @@ def get_review(db: Session, review_id: str):
     return review_repository.fetch_review(db, review_id)
 
 
-def create_review(db: Session, payload):
+def create_review(db: Session, payload, user_id: str):
     # 리뷰를 생성하고 저장한다.
     brand = db.get(Brand, payload.brandId)
     if brand is None:
@@ -82,6 +82,7 @@ def create_review(db: Session, payload):
 
     review = Review(
         id=f"review-{uuid.uuid4().hex}",
+        user_id=user_id,
         store_id=store.id,
         brand_id=brand.id,
         menu_id=menu.id,

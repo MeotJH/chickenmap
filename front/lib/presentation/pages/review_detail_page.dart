@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:front/core/constants/app_colors.dart';
 import 'package:front/core/constants/app_strings.dart';
 import 'package:front/core/constants/rating_dimensions.dart';
 import 'package:front/core/utils/formatters.dart';
 import 'package:front/domain/entities/review.dart';
+import 'package:front/presentation/providers/auth_providers.dart';
 import 'package:front/presentation/providers/review_providers.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,7 +21,23 @@ class ReviewDetailPage extends ConsumerWidget {
     this.initialReview,
   });
 
-  void _onDestinationSelected(BuildContext context, int index) {
+  Future<void> _showTopToast(BuildContext context, String message) {
+    return Flushbar<void>(
+      message: message,
+      duration: const Duration(seconds: 2),
+      flushbarPosition: FlushbarPosition.TOP,
+      backgroundColor: const Color(0xFF2A2A2A),
+      margin: const EdgeInsets.all(12),
+      borderRadius: BorderRadius.circular(10),
+      icon: const Icon(Icons.info_outline, color: Colors.white),
+    ).show(context);
+  }
+
+  Future<void> _onDestinationSelected(
+    BuildContext context,
+    WidgetRef ref,
+    int index,
+  ) async {
     switch (index) {
       case 0:
         context.go('/ranking');
@@ -28,6 +46,13 @@ class ReviewDetailPage extends ConsumerWidget {
         context.go('/map');
         break;
       case 2:
+        final user = ref.read(authStateProvider).asData?.value ??
+            ref.read(authControllerProvider).currentUser;
+        if (user == null) {
+          await _showTopToast(context, '내 활동은 로그인 후 확인할 수 있어요.');
+          if (context.mounted) context.go('/auth');
+          return;
+        }
         context.go('/activity');
         break;
     }
@@ -55,7 +80,7 @@ class ReviewDetailPage extends ConsumerWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: 0,
         onDestinationSelected: (index) =>
-            _onDestinationSelected(context, index),
+            _onDestinationSelected(context, ref, index),
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.emoji_events_outlined),

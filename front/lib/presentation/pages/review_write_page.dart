@@ -10,8 +10,10 @@ import 'package:front/domain/entities/menu.dart';
 import 'package:front/presentation/providers/app_providers.dart';
 import 'package:front/presentation/providers/review_providers.dart';
 import 'package:front/presentation/providers/ranking_providers.dart';
+import 'package:front/presentation/providers/auth_providers.dart';
 import 'package:go_router/go_router.dart';
 import 'package:front/data/remote/review_api.dart';
+import 'package:dio/dio.dart';
 
 // 리뷰 작성 화면이다.
 class ReviewWritePage extends ConsumerStatefulWidget {
@@ -170,6 +172,14 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
   }
 
   Future<void> _submitReview() async {
+    final auth = await ref.read(authControllerProvider).getAuthContext();
+    if (auth == null) {
+      await _showTopToast('리뷰 작성은 로그인 후 이용할 수 있어요.');
+      if (!mounted) return;
+      context.push('/auth');
+      return;
+    }
+
     if (_selectedBrand == null) {
       await _showTopToast('브랜드를 선택해주세요.');
       return;
@@ -200,12 +210,23 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
           overall: overall,
           comment: _commentController.text.trim(),
         ),
+        auth: auth,
       );
       ref.invalidate(myReviewsProvider);
       ref.invalidate(rankingListProvider);
       if (!mounted) return;
       context.push('/review/${review.id}', extra: review);
-    } catch (_) {
+    } on DioException catch (e, stackTrace) {
+      print('Error submitting review: $e');
+      print('Stack trace: $stackTrace');
+      final status = e.response?.statusCode;
+      final detail = e.response?.data;
+      await _showTopToast(
+        '리뷰 제출 실패${status == null ? '' : ' ($status)'}: ${detail ?? e.message}',
+      );
+    } catch (e, stackTrace) {
+      print('Error submitting review: $e');
+      print('Stack trace: $stackTrace');
       await _showTopToast('리뷰 제출에 실패했어요.');
     } finally {
       if (mounted) {
@@ -333,8 +354,7 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                                 ),
                               )
                               .toList(),
-                          onChanged:
-                              _isBrandLocked
+                          onChanged: _isBrandLocked
                               ? null
                               : (brand) async {
                                   if (brand == null) return;
@@ -356,11 +376,15 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.cardBorder),
+                              borderSide: const BorderSide(
+                                color: AppColors.cardBorder,
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.cardBorder),
+                              borderSide: const BorderSide(
+                                color: AppColors.cardBorder,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -408,11 +432,15 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                                     fillColor: Colors.white,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: AppColors.cardBorder),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.cardBorder,
+                                      ),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: AppColors.cardBorder),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.cardBorder,
+                                      ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
@@ -532,11 +560,15 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: AppColors.cardBorder),
+                        borderSide: const BorderSide(
+                          color: AppColors.cardBorder,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: AppColors.cardBorder),
+                        borderSide: const BorderSide(
+                          color: AppColors.cardBorder,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
