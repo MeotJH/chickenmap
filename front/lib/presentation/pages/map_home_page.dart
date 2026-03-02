@@ -322,17 +322,17 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
                   children: [
                     Row(
                       children: [
-                        IconButton(
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.menu,
-                            color: AppColors.textPrimary,
-                          ),
-                          style: IconButton.styleFrom(
-                            backgroundColor: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
+                        // IconButton(
+                        //   onPressed: () {},
+                        //   icon: const Icon(
+                        //     Icons.menu,
+                        //     color: AppColors.textPrimary,
+                        //   ),
+                        //   style: IconButton.styleFrom(
+                        //     backgroundColor: Colors.white,
+                        //   ),
+                        // ),
+                        // const SizedBox(width: 8),
                         Expanded(
                           child: TextField(
                             controller: _searchController,
@@ -539,7 +539,7 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${_selectedStore!.rating} · ${_selectedStore!.reviewCount} 리뷰',
+                                '${_selectedStore!.rating.toStringAsFixed(2)} · ${_selectedStore!.reviewCount} 리뷰',
                                 style: const TextStyle(
                                   color: AppColors.textSecondary,
                                   fontSize: 12,
@@ -694,7 +694,8 @@ class _SearchResultPanel extends StatelessWidget {
                   onTap: () => onSelect(item),
                 );
               },
-              separatorBuilder: (context, index) => const Divider(height: 1),
+              separatorBuilder: (context, index) =>
+                  const Divider(height: 1, color: AppColors.cardBorder),
               itemCount: results.length,
             ),
         ],

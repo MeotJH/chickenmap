@@ -59,7 +59,13 @@ class AuthStartPage extends ConsumerWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: IconButton(
-                    onPressed: () => context.pop(),
+                    onPressed: () {
+                      if (context.canPop()) {
+                        context.pop();
+                        return;
+                      }
+                      context.go('/ranking');
+                    },
                     icon: const Icon(Icons.arrow_back),
                   ),
                 ),
