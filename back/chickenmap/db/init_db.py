@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta
-import uuid
+from datetime import datetime
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
@@ -7,13 +6,8 @@ from chickenmap.db.session import Base, engine
 from chickenmap.models.entities import (
     Brand,
     Menu,
-    Store,
-    BrandMenuAggregate,
-    StoreAggregate,
-    Review,
     User,
 )
-from chickenmap.core.rating_dimensions import scores_json_dumps
 
 
 # DB 초기화 및 목업 시드를 수행하는 모듈이다.
@@ -69,9 +63,93 @@ def _migrate_scores_json_columns(db: Session):
     db.commit()
 
 
+def _classify_kyochon_category(menu_name: str) -> str:
+    # 교촌 메뉴명을 기준으로 간단 분류한다.
+    if "후라이드" in menu_name:
+        return "후라이드"
+    if "간장" in menu_name or "소이" in menu_name:
+        return "간장"
+    if "레드" in menu_name or "마라" in menu_name or "양념" in menu_name:
+        return "양념"
+    if "허니" in menu_name:
+        return "양념"
+    return "기타"
+
+
+def _build_kyochon_official_menus() -> list[Menu]:
+    # 교촌 메뉴 페이지(<ul class="menuProduct">) 기준으로 구성한다.
+    rows: list[tuple[str, str, str]] = [
+        ("41130", "허니갈릭한마리", "/uploadFiles/TB_ITEM/NEW_허니갈릭한마리.png"),
+        ("41062", "마라레드한마리", "/uploadFiles/TB_ITEM/list-마라레드.png"),
+        ("41132", "허니갈릭윙박스", "/uploadFiles/TB_ITEM/허니갈릭윙박스_list.png"),
+        ("40992", "마라레드윙박스", "/uploadFiles/TB_ITEM/list_마라레드윙박스.png"),
+        ("40936", "간장윙박스", "/uploadFiles/TB_ITEM/list_간장윙박스.png"),
+        ("40937", "레드윙박스", "/uploadFiles/TB_ITEM/lsti_레드윙박스.png"),
+        ("40875", "허니윙박스", "/uploadFiles/TB_ITEM/list-허니윙(3).png"),
+        ("40890", "후라이드윙박스", "/uploadFiles/TB_ITEM/list-후라이드윙(3).png"),
+        ("40914", "양념치킨윙박스", "/uploadFiles/TB_ITEM/list_양념치킨윙.png"),
+        ("41131", "허니갈릭싱글윙", "/uploadFiles/TB_ITEM/NEW_허니갈릭싱글윙.png"),
+        ("40993", "마라레드싱글윙", "/uploadFiles/TB_ITEM/마라레드싱글윙_list.png"),
+        ("40801", "간장싱글윙", "/uploadFiles/TB_ITEM/list-간장싱글윙.png"),
+        ("40802", "레드싱글윙", "/uploadFiles/TB_ITEM/list-레드싱글윙.png"),
+        ("40864", "허니싱글윙", "/uploadFiles/TB_ITEM/list-허니싱글윙(3).png"),
+        ("40885", "후라이드싱글윙", "/uploadFiles/TB_ITEM/list-후라이드싱글윙(3).png"),
+        ("40915", "양념치킨싱글윙", "/uploadFiles/TB_ITEM/list-양념싱글윙.png"),
+        ("30161", "허니한마리", "/uploadFiles/TB_ITEM/교촌-허니-오리.png"),
+        ("30164", "허니콤보", "/uploadFiles/TB_ITEM/교촌-허니-콤보(1).png"),
+        ("38053", "허니순살", "/uploadFiles/TB_ITEM/list-허니순살.png"),
+        ("40877", "후라이드한마리", "/uploadFiles/TB_ITEM/list_후라이드한마리.png"),
+        ("40878", "양념치킨한마리", "/uploadFiles/TB_ITEM/list_양념치킨한마리.png"),
+        ("40879", "후라이드양념반반한마리", "/uploadFiles/TB_ITEM/list_후라이드양념반반한마리.png"),
+        ("40961", "후라이드순살", "/uploadFiles/TB_ITEM/list_후라이드순살.png"),
+        ("40962", "양념치킨순살", "/uploadFiles/TB_ITEM/list_양념순살.png"),
+        ("40963", "후라이드양념반반순살", "/uploadFiles/TB_ITEM/list_후라이드양념순살.png"),
+        ("40486", "허니옥수수순살", "/uploadFiles/TB_ITEM/list-허니옥수순살.png"),
+        ("40484", "허니옥수수한마리", "/uploadFiles/TB_ITEM/list-교촌옥수수오리지날.png"),
+        ("30098", "간장한마리", "/uploadFiles/TB_ITEM/간장한마리_list.png"),
+        ("30146", "간장콤보", "/uploadFiles/TB_ITEM/브랜드_list_15-10-231103.png"),
+        ("38390", "간장순살", "/uploadFiles/TB_ITEM/list-간장순살.png"),
+        ("30083", "간장스틱", "/uploadFiles/TB_ITEM/교촌스틱_list.png"),
+        ("30022", "레드한마리", "/uploadFiles/TB_ITEM/레드한마리_list.png"),
+        ("30030", "레드콤보", "/uploadFiles/TB_ITEM/브랜드_list_15-10-231098.png"),
+        ("38391", "레드순살", "/uploadFiles/TB_ITEM/list-레드순살.png"),
+        ("30018", "레드스틱", "/uploadFiles/TB_ITEM/레드스틱_list(0).png"),
+        ("30100", "반반한마리[간장+레드]", "/uploadFiles/TB_ITEM/반반한마리_list(3).png"),
+        ("41137", "반반한마리[마라레드+허니갈릭]", "/uploadFiles/TB_ITEM/NEW_반반한마리(마라레드+허니갈릭).png"),
+        ("41134", "반반한마리[레드+허니갈릭]", "/uploadFiles/TB_ITEM/NEW_반반한마리(레드+허니갈릭).png"),
+        ("41133", "반반한마리[간장+허니갈릭]", "/uploadFiles/TB_ITEM/NEW_반반한마리(간장+허니갈릭).png"),
+        ("41135", "반반한마리[간장+마라레드]", "/uploadFiles/TB_ITEM/list_간장_마라레드.png"),
+        ("41136", "반반한마리[레드+마라레드]", "/uploadFiles/TB_ITEM/list_레드_마라레드.png"),
+        ("30150", "반반콤보[간장+레드]", "/uploadFiles/TB_ITEM/브랜드_list_15-10-231107.png"),
+        ("38392", "반반순살[간장+레드]", "/uploadFiles/TB_ITEM/list-반반순살_(간장+레드).png"),
+        ("30086", "반반스틱[간장+레드]", "/uploadFiles/TB_ITEM/반반스틱_list.png"),
+        ("38414", "반반순살[레드+허니]", "/uploadFiles/TB_ITEM/list-반반순살(레드+허니).png"),
+        ("39270", "살살후라이드", "/uploadFiles/TB_ITEM/브랜드_list_15-10-221035.png"),
+        ("39271", "파채소이살살", "/uploadFiles/TB_ITEM/브랜드_list_15-10-221025.png"),
+        ("30148", "간장콤보[S]", "/uploadFiles/TB_ITEM/30148_교촌콤보s_list.png"),
+        ("38393", "간장순살[S]", "/uploadFiles/TB_ITEM/38393_교촌순살s_list.png"),
+        ("30084", "간장스틱[S]", "/uploadFiles/TB_ITEM/30084_교촌스틱s_list.png"),
+        ("30032", "레드콤보[S]", "/uploadFiles/TB_ITEM/레드콤보[S]_list.png"),
+        ("38394", "레드순살[S]", "/uploadFiles/TB_ITEM/38394_레드순살s_list.png"),
+        ("30020", "레드스틱[S]", "/uploadFiles/TB_ITEM/30020_레드스틱s_list.png"),
+        ("38055", "허니순살[S]", "/uploadFiles/TB_ITEM/허니순살s_list-(3).png"),
+    ]
+
+    return [
+        Menu(
+            id=f"menu-kyochon-official-{menu_id}",
+            brand_id="brand-kyochon",
+            name=name,
+            image_url=f"https://www.kyochon.com{image_path}",
+            category=_classify_kyochon_category(name),
+        )
+        for menu_id, name, image_path in rows
+    ]
+
+
 def seed_if_empty(db: Session):
     # 기준 데이터(브랜드/메뉴)는 없는 항목만 추가한다.
-    # 샘플 지점/집계/리뷰는 기존 데이터가 없을 때만 삽입한다.
+    # 샘플 지점/집계/리뷰는 삽입하지 않는다.
 
     brands = [
         Brand(
@@ -190,7 +268,7 @@ def seed_if_empty(db: Session):
             id="menu-kyochon-honey",
             brand_id="brand-kyochon",
             name="허니콤보",
-            image_url="https://lh3.googleusercontent.com/aida-public/AB6AXuDEPxO9awoBLaA-mkeylM1DNgb8uzGHvEG4WSp8oPjNji9BLGPkwQt6s50f2wEP8bZCQ72jMQXAnUjx5sUTwbZHjMOeGvZJH62PKbMqy-CcWoJL7cWa_iUPxWxkYtOEstWgOlJIYdVNQ2ZmHdnsUaUKN7h10m3nwskKNHLODohET5TtivzS7jy9wXjktAIED7bqRn5OOEu3mQ9hfskS8t6v1OSXzXqAbufeOyhCGZiU9kPoFBpbd0ARibN4HLaKwpU1kyUx2OaSqUuT",
+            image_url="https://www.kyochon.com/uploadFiles/TB_ITEM/교촌-허니-콤보(1).png",
             category="양념",
         ),
         Menu(
@@ -204,15 +282,78 @@ def seed_if_empty(db: Session):
             id="menu-kyochon-redcombo",
             brand_id="brand-kyochon",
             name="레드콤보",
-            image_url=default_menu_image,
+            image_url="https://www.kyochon.com/uploadFiles/TB_ITEM/브랜드_list_15-10-231098.png",
             category="양념",
         ),
         Menu(
             id="menu-kyochon-original",
             brand_id="brand-kyochon",
             name="교촌오리지날",
-            image_url=default_menu_image,
+            image_url="https://www.kyochon.com/uploadFiles/TB_ITEM/list_후라이드한마리.png",
             category="후라이드",
+        ),
+        Menu(
+            id="menu-kyochon-honey-garlic-whole",
+            brand_id="brand-kyochon",
+            name="허니갈릭한마리",
+            image_url="https://www.kyochon.com/uploadFiles/TB_ITEM/NEW_허니갈릭한마리.png",
+            category="양념",
+        ),
+        Menu(
+            id="menu-kyochon-mara-red-whole",
+            brand_id="brand-kyochon",
+            name="마라레드한마리",
+            image_url="https://www.kyochon.com/uploadFiles/TB_ITEM/list-마라레드.png",
+            category="양념",
+        ),
+        Menu(
+            id="menu-kyochon-honey-garlic-wing-box",
+            brand_id="brand-kyochon",
+            name="허니갈릭윙박스",
+            image_url="https://www.kyochon.com/uploadFiles/TB_ITEM/허니갈릭윙박스_list.png",
+            category="양념",
+        ),
+        Menu(
+            id="menu-kyochon-mara-red-wing-box",
+            brand_id="brand-kyochon",
+            name="마라레드윙박스",
+            image_url="https://www.kyochon.com/uploadFiles/TB_ITEM/list_마라레드윙박스.png",
+            category="양념",
+        ),
+        Menu(
+            id="menu-kyochon-soy-wing-box",
+            brand_id="brand-kyochon",
+            name="간장윙박스",
+            image_url="https://www.kyochon.com/uploadFiles/TB_ITEM/list_간장윙박스.png",
+            category="간장",
+        ),
+        Menu(
+            id="menu-kyochon-red-wing-box",
+            brand_id="brand-kyochon",
+            name="레드윙박스",
+            image_url="https://www.kyochon.com/uploadFiles/TB_ITEM/lsti_레드윙박스.png",
+            category="양념",
+        ),
+        Menu(
+            id="menu-kyochon-honey-wing-box",
+            brand_id="brand-kyochon",
+            name="허니윙박스",
+            image_url="https://www.kyochon.com/uploadFiles/TB_ITEM/list-허니윙(3).png",
+            category="양념",
+        ),
+        Menu(
+            id="menu-kyochon-fried-wing-box",
+            brand_id="brand-kyochon",
+            name="후라이드윙박스",
+            image_url="https://www.kyochon.com/uploadFiles/TB_ITEM/list-후라이드윙(3).png",
+            category="후라이드",
+        ),
+        Menu(
+            id="menu-kyochon-seasoned-wing-box",
+            brand_id="brand-kyochon",
+            name="양념치킨윙박스",
+            image_url="https://www.kyochon.com/uploadFiles/TB_ITEM/list_양념치킨윙.png",
+            category="양념",
         ),
         Menu(
             id="menu-goobne-gochubasa",
@@ -1914,122 +2055,7 @@ def seed_if_empty(db: Session):
     ]
 
     menus.extend(rtf_seed_menus)
-
-    stores = [
-        Store(
-            id="store-1",
-            brand_id="brand-bbq",
-            name="BBQ 신내동점",
-            address="서울 중랑구 신내로 12",
-            distance_km=0.8,
-            lat=37.6132,
-            lng=127.0945,
-        ),
-        Store(
-            id="store-2",
-            brand_id="brand-kyochon",
-            name="교촌 중화점",
-            address="서울 중랑구 중화로 101",
-            distance_km=1.2,
-            lat=37.5978,
-            lng=127.0785,
-        ),
-        Store(
-            id="store-3",
-            brand_id="brand-bhc",
-            name="BHC 망우점",
-            address="서울 중랑구 망우로 45",
-            distance_km=1.9,
-            lat=37.5992,
-            lng=127.0924,
-        ),
-    ]
-
-    ranking_scores = dict(
-        crispy=4.7,
-        juicy=4.6,
-        salty=4.2,
-        oil=4.4,
-        chicken_quality=4.8,
-        fry_quality=4.7,
-        portion=4.3,
-    )
-
-    store_scores = dict(
-        crispy=4.4,
-        juicy=4.3,
-        salty=4.1,
-        oil=4.2,
-        chicken_quality=4.5,
-        fry_quality=4.4,
-        portion=4.0,
-    )
-
-    brand_menu_aggregates = [
-        BrandMenuAggregate(
-            id=str(uuid.uuid4()),
-            brand_id="brand-bbq",
-            menu_id="menu-bbq-hwanggeum-olive-fried",
-            rating=4.9,
-            review_count=2482,
-            highlight_score_a=4.9,
-            highlight_label_a="바삭함",
-            highlight_score_b=4.7,
-            highlight_label_b="육즙",
-            scores_json=scores_json_dumps(ranking_scores),
-        ),
-        BrandMenuAggregate(
-            id=str(uuid.uuid4()),
-            brand_id="brand-bhc",
-            menu_id="menu-bhc-bburinkle",
-            rating=4.8,
-            review_count=1905,
-            highlight_score_a=4.8,
-            highlight_label_a="매직파우더",
-            highlight_score_b=4.9,
-            highlight_label_b="풍미",
-            scores_json=scores_json_dumps(ranking_scores),
-        ),
-        BrandMenuAggregate(
-            id=str(uuid.uuid4()),
-            brand_id="brand-kyochon",
-            menu_id="menu-kyochon-honey",
-            rating=4.7,
-            review_count=3120,
-            highlight_score_a=4.6,
-            highlight_label_a="바삭함",
-            highlight_score_b=4.8,
-            highlight_label_b="단맛",
-            scores_json=scores_json_dumps(ranking_scores),
-        ),
-    ]
-
-    store_aggregates = [
-        StoreAggregate(
-            id="store-1",
-            store_id="store-1",
-            rating=4.5,
-            review_count=1240,
-            scores_json=scores_json_dumps(store_scores),
-            counts_json=scores_json_dumps({key: 1240 for key in store_scores}),
-        ),
-        StoreAggregate(
-            id="store-2",
-            store_id="store-2",
-            rating=4.2,
-            review_count=840,
-            scores_json=scores_json_dumps(store_scores),
-            counts_json=scores_json_dumps({key: 840 for key in store_scores}),
-        ),
-        StoreAggregate(
-            id="store-3",
-            store_id="store-3",
-            rating=3.9,
-            review_count=560,
-            scores_json=scores_json_dumps(store_scores),
-            counts_json=scores_json_dumps({key: 560 for key in store_scores}),
-        ),
-    ]
+    menus.extend(_build_kyochon_official_menus())
 
     now = datetime.now()
     seed_users = [
@@ -2043,37 +2069,8 @@ def seed_if_empty(db: Session):
             updated_at=now,
         )
     ]
-    reviews = [
-        Review(
-            id="review-1",
-            user_id="user-seed",
-            store_id="store-1",
-            brand_id="brand-bbq",
-            menu_id="menu-bbq-fried",
-            scores_json=scores_json_dumps(ranking_scores),
-            overall=4.6,
-            comment="바삭함이 오래가고 기름 냄새가 덜했어요.",
-            created_at=now - timedelta(days=2),
-        ),
-        Review(
-            id="review-2",
-            user_id="user-seed",
-            store_id="store-1",
-            brand_id="brand-bbq",
-            menu_id="menu-bbq-jamaica",
-            scores_json=scores_json_dumps(store_scores),
-            overall=4.2,
-            comment="양은 좋았는데 살짝 짭짤했어요.",
-            created_at=now - timedelta(days=5),
-        ),
-    ]
-
     existing_brand_ids = set(db.scalars(select(Brand.id)).all())
     existing_user_ids = set(db.scalars(select(User.id)).all())
-    existing_store = db.execute(select(Store.id)).first()
-    existing_brand_aggregate = db.execute(select(BrandMenuAggregate.id)).first()
-    existing_store_aggregate = db.execute(select(StoreAggregate.id)).first()
-    existing_review = db.execute(select(Review.id)).first()
 
     db.add_all([brand for brand in brands if brand.id not in existing_brand_ids])
     db.add_all([user for user in seed_users if user.id not in existing_user_ids])
@@ -2098,12 +2095,4 @@ def seed_if_empty(db: Session):
         target.image_url = seed_menu.image_url
         target.category = seed_menu.category
 
-    if not existing_store:
-        db.add_all(stores)
-    if not existing_brand_aggregate:
-        db.add_all(brand_menu_aggregates)
-    if not existing_store_aggregate:
-        db.add_all(store_aggregates)
-    if not existing_review:
-        db.add_all(reviews)
     db.commit()

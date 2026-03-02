@@ -78,13 +78,17 @@ class _RankingHomePageState extends ConsumerState<RankingHomePage> {
   ) async {
     switch (action) {
       case _ProfileMenuAction.activity:
-        final user = ref.read(authStateProvider).asData?.value ??
+        final user =
+            ref.read(authStateProvider).asData?.value ??
             ref.read(authControllerProvider).currentUser;
         if (user == null) {
           context.push('/auth');
           return;
         }
         context.go('/activity');
+        break;
+      case _ProfileMenuAction.login:
+        context.push('/auth');
         break;
       case _ProfileMenuAction.logout:
         await ref.read(authControllerProvider).signOut();
@@ -101,6 +105,10 @@ class _RankingHomePageState extends ConsumerState<RankingHomePage> {
   // 랭킹 리스트와 상단 UI를 구성한다.
   Widget build(BuildContext context) {
     final rankings = ref.watch(rankingListProvider);
+    final user =
+        ref.watch(authStateProvider).asData?.value ??
+        ref.read(authControllerProvider).currentUser;
+    final isLoggedIn = user != null;
     final categories = rankings.maybeWhen(
       data: _categoryOptions,
       orElse: () => const [_defaultCategory],
@@ -120,6 +128,7 @@ class _RankingHomePageState extends ConsumerState<RankingHomePage> {
               onSearchChanged: (value) => setState(() => _query = value),
               onCategorySelected: (value) =>
                   setState(() => _selectedCategory = value),
+              isLoggedIn: isLoggedIn,
               onProfileMenuSelect: (action) =>
                   _handleProfileMenuSelect(context, action),
             ),
@@ -154,13 +163,13 @@ class _RankingHomePageState extends ConsumerState<RankingHomePage> {
                           ),
                         );
                       },
-                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      separatorBuilder: (_, _) => const SizedBox(height: 16),
                       itemCount: filtered.length,
                     );
                   },
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
-                  error: (_, __) =>
+                  error: (_, _) =>
                       const Center(child: Text('랭킹 정보를 불러오지 못했어요.')),
                 ),
               ),
@@ -179,6 +188,7 @@ class _RankingHeader extends StatelessWidget {
   final String selectedCategory;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<String> onCategorySelected;
+  final bool isLoggedIn;
   final ValueChanged<_ProfileMenuAction> onProfileMenuSelect;
 
   const _RankingHeader({
@@ -187,6 +197,7 @@ class _RankingHeader extends StatelessWidget {
     required this.selectedCategory,
     required this.onSearchChanged,
     required this.onCategorySelected,
+    required this.isLoggedIn,
     required this.onProfileMenuSelect,
   });
 
@@ -216,8 +227,8 @@ class _RankingHeader extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -226,14 +237,16 @@ class _RankingHeader extends StatelessWidget {
               PopupMenuButton<_ProfileMenuAction>(
                 tooltip: '프로필 메뉴',
                 onSelected: onProfileMenuSelect,
-                itemBuilder: (context) => const [
-                  PopupMenuItem<_ProfileMenuAction>(
+                itemBuilder: (context) => [
+                  const PopupMenuItem<_ProfileMenuAction>(
                     value: _ProfileMenuAction.activity,
                     child: Text('내 활동'),
                   ),
                   PopupMenuItem<_ProfileMenuAction>(
-                    value: _ProfileMenuAction.logout,
-                    child: Text('로그아웃'),
+                    value: isLoggedIn
+                        ? _ProfileMenuAction.logout
+                        : _ProfileMenuAction.login,
+                    child: Text(isLoggedIn ? '로그아웃' : '로그인'),
                   ),
                 ],
                 icon: const Icon(Icons.account_circle),
@@ -282,7 +295,4 @@ class _RankingHeader extends StatelessWidget {
   }
 }
 
-enum _ProfileMenuAction {
-  activity,
-  logout,
-}
+enum _ProfileMenuAction { activity, login, logout }
