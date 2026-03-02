@@ -76,6 +76,9 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
       final results = await repository.searchPlaces(query.trim());
       setState(() {
         _results = results;
+        if (results.isEmpty) {
+          _searchError = '치킨집 검색 결과가 없어요.';
+        }
       });
     } catch (_) {
       setState(() {
@@ -89,8 +92,9 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
   }
 
   void _openReviewWrite(PlaceSearchResult item) {
-    final address =
-        item.roadAddress.isNotEmpty ? item.roadAddress : item.address;
+    final address = item.roadAddress.isNotEmpty
+        ? item.roadAddress
+        : item.address;
     final uri = Uri(
       path: '/review/write',
       queryParameters: {'storeName': item.name, 'address': address},
@@ -168,7 +172,8 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
     AppLocationState location, {
     required bool focusMap,
   }) async {
-    final changed = (_mapLat - location.latitude).abs() > 0.000001 ||
+    final changed =
+        (_mapLat - location.latitude).abs() > 0.000001 ||
         (_mapLng - location.longitude).abs() > 0.000001 ||
         _isCurrentLocationResolved != location.fromDevice;
     if (!changed || !mounted) return;
@@ -474,9 +479,11 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
                                 );
                               },
                               loading: () => const Center(
-                                  child: CircularProgressIndicator()),
+                                child: CircularProgressIndicator(),
+                              ),
                               error: (error, stackTrace) => const Center(
-                                  child: Text('지점 정보를 불러오지 못했어요.')),
+                                child: Text('지점 정보를 불러오지 못했어요.'),
+                              ),
                             ),
                           ),
                         ],
@@ -568,6 +575,7 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
                       ),
                     ],
                   ),
+                  //여기
                   child: Row(
                     children: [
                       CircleAvatar(

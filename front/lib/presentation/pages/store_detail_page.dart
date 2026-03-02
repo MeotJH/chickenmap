@@ -179,7 +179,9 @@ class _StoreDetailPageState extends ConsumerState<StoreDetailPage> {
                                       reviews.asData?.value ?? const [],
                                     );
                                 final selected =
-                                    reviewedCategories.contains(_selectedCategory)
+                                    reviewedCategories.contains(
+                                      _selectedCategory,
+                                    )
                                     ? _selectedCategory
                                     : (reviewedCategories.isNotEmpty
                                           ? reviewedCategories.first
