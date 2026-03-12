@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:front/data/mock/mock_data.dart';
@@ -46,7 +47,14 @@ class AppLocationController extends Notifier<AppLocationState> {
   Future<void> initialize() async {
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return;
+      if (!serviceEnabled) {
+        if (kDebugMode) {
+          debugPrint(
+            '[Location] serviceDisabled -> fallback=$defaultLat,$defaultLng',
+          );
+        }
+        return;
+      }
 
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
@@ -55,6 +63,12 @@ class AppLocationController extends Notifier<AppLocationState> {
 
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
+        if (kDebugMode) {
+          debugPrint(
+            '[Location] permissionDenied($permission) '
+            '-> fallback=$defaultLat,$defaultLng',
+          );
+        }
         return;
       }
 
@@ -65,6 +79,9 @@ class AppLocationController extends Notifier<AppLocationState> {
         fromDevice: true,
       );
     } catch (_) {
+      if (kDebugMode) {
+        debugPrint('[Location] exception -> fallback=$defaultLat,$defaultLng');
+      }
       // 권한 미지원/브라우저 차단/시간초과 등은 기본 좌표를 유지한다.
     }
   }

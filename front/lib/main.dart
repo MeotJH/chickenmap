@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:front/app/app.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:front/presentation/utils/naver_map_init.dart';
@@ -45,6 +46,8 @@ Future<void> _loadEnv() async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
+    usePathUrlStrategy(); // 추가
+
     await _loadEnv();
     if (kIsWeb) {
       await Firebase.initializeApp(options: _firebaseOptionsFromEnv());
