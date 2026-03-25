@@ -28,7 +28,6 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
   static const double _sheetInitialExtent = 0.28;
   static const double _sheetMinExtent = 0.2;
   static const double _sheetMaxExtent = 0.6;
-  static const double _markerRadiusMeters = 500;
   final _searchController = TextEditingController();
 
   List<PlaceSearchResult> _results = [];
@@ -231,19 +230,6 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
     return meters / 1000;
   }
 
-  bool _isWithinMarkerRadius(
-    StoreSummary store,
-    AppLocationState location,
-  ) {
-    final meters = Geolocator.distanceBetween(
-      location.latitude,
-      location.longitude,
-      store.lat,
-      store.lng,
-    );
-    return meters <= _markerRadiusMeters;
-  }
-
   void _selectSortType(_MapSortType sortType) {
     if (_selectedSortType == sortType) return;
     setState(() {
@@ -271,17 +257,10 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
     );
     final stores = ref.watch(nearbyStoresProvider);
     final storeItems = _sortStores(stores.asData?.value ?? [], currentLocation);
-    final markerItems = storeItems
-        .where((store) => _isWithinMarkerRadius(store, currentLocation))
-        .toList();
     if (kDebugMode) {
       debugPrint('[MapHome] storeItems=${storeItems.length}');
-      debugPrint(
-        '[MapHome] markerItems=${markerItems.length} '
-        '(radius=${_markerRadiusMeters}m)',
-      );
     }
-    final markers = markerItems
+    final markers = storeItems
         .map(
           (store) => MapMarkerData(
             id: store.id,
@@ -311,7 +290,7 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
         );
       }
     }
-    final storeById = {for (final store in markerItems) store.id: store};
+    final storeById = {for (final store in storeItems) store.id: store};
 
     return Scaffold(
       body: Stack(
@@ -475,34 +454,7 @@ class _MapHomePageState extends ConsumerState<MapHomePage> {
                                 final sortedItems = _sortStores(
                                   items,
                                   currentLocation,
-                                )
-                                    .where(
-                                      (store) => _isWithinMarkerRadius(
-                                        store,
-                                        currentLocation,
-                                      ),
-                                    )
-                                    .toList();
-                                if (sortedItems.isEmpty) {
-                                  return Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: const [
-                                        Text(
-                                          '🍗',
-                                          style: TextStyle(fontSize: 32),
-                                        ),
-                                        SizedBox(height: 8),
-                                        Text(
-                                          '근처에 가게가 없어요',
-                                          style: TextStyle(
-                                            color: AppColors.textSecondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }
+                                );
                                 return ListView(
                                   controller: controller,
                                   children: [
