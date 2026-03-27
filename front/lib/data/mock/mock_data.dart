@@ -142,6 +142,7 @@ class MockDataSource {
           brandName: 'BBQ',
           menuName: '황금올리브 후라이드',
           menuCategory: '후라이드',
+          userEmail: 'marionette934@gmail.com',
           scores: {
             'crispy': 4.7,
             'juicy': 4.6,
@@ -153,6 +154,7 @@ class MockDataSource {
           },
           overall: 4.6,
           comment: '바삭함이 오래가고 기름 냄새가 덜했어요.',
+          imageUrls: const [],
           createdAt: DateTime.now().subtract(const Duration(days: 2)),
         ),
         Review(
@@ -161,6 +163,7 @@ class MockDataSource {
           brandName: 'BBQ',
           menuName: '자메이카 통다리',
           menuCategory: '구이',
+          userEmail: 'businesskim93@gmail.com',
           scores: {
             'smoky': 4.1,
             'juicy': 4.0,
@@ -172,6 +175,7 @@ class MockDataSource {
           },
           overall: 4.2,
           comment: '양은 좋았는데 살짝 짭짤했어요.',
+          imageUrls: const [],
           createdAt: DateTime.now().subtract(const Duration(days: 5)),
         ),
       ];

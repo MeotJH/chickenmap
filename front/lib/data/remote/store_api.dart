@@ -75,9 +75,11 @@ Review _reviewFromJson(Map<String, dynamic> json) {
     brandName: json['brandName'] as String? ?? '',
     menuName: json['menuName'] as String? ?? '',
     menuCategory: json['menuCategory'] as String? ?? '',
+    userEmail: json['userEmail'] as String? ?? '',
     scores: scores,
     overall: (json['overall'] as num?)?.toDouble() ?? 0,
     comment: json['comment'] as String? ?? '',
+    imageUrls: _imageUrlsFromJson(json['imageUrls']),
     createdAt: DateTime.parse(
       json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
     ),
@@ -90,4 +92,13 @@ Map<String, double> _scoresFromJson(dynamic raw) {
     for (final entry in raw.entries)
       entry.key: (entry.value as num?)?.toDouble() ?? 0,
   };
+}
+
+List<String> _imageUrlsFromJson(dynamic raw) {
+  if (raw is! List<dynamic>) return const [];
+  return raw
+      .whereType<String>()
+      .map((url) => url.trim())
+      .where((url) => url.isNotEmpty)
+      .toList();
 }

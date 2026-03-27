@@ -6,6 +6,7 @@ import 'package:front/presentation/providers/auth_providers.dart';
 import 'package:front/presentation/providers/review_providers.dart';
 import 'package:front/presentation/widgets/review_card.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dio/dio.dart';
 
 // 내 활동(리뷰)을 보여주는 화면이다.
 class MyActivityPage extends ConsumerWidget {
@@ -51,7 +52,27 @@ class MyActivityPage extends ConsumerWidget {
                   itemCount: items.length,
                 ),
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, _) => const Center(child: Text('리뷰를 불러오지 못했어요.')),
+                error: (error, _) {
+                  final status = error is DioException
+                      ? error.response?.statusCode
+                      : null;
+                  if (status == 401) {
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('로그인이 필요해요. 다시 로그인해주세요.'),
+                          const SizedBox(height: 12),
+                          WriteChickenReviewButton(
+                            onPressed: () => context.push('/auth'),
+                            text: '로그인하러 가기',
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return const Center(child: Text('리뷰를 불러오지 못했어요.'));
+                },
               ),
       ),
     );

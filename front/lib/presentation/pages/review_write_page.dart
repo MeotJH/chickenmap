@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:another_flushbar/flushbar.dart';
+import 'package:flutter/foundation.dart';
 import 'package:front/app/write_chicken_review_button.dart';
 import 'package:front/core/constants/app_colors.dart';
 import 'package:front/core/constants/rating_dimensions.dart';
@@ -11,9 +13,12 @@ import 'package:front/presentation/providers/app_providers.dart';
 import 'package:front/presentation/providers/review_providers.dart';
 import 'package:front/presentation/providers/ranking_providers.dart';
 import 'package:front/presentation/providers/auth_providers.dart';
+import 'package:front/domain/entities/auth_context.dart';
+import 'package:front/presentation/utils/web_image_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:front/data/remote/review_api.dart';
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 
 // 리뷰 작성 화면이다.
 class ReviewWritePage extends ConsumerStatefulWidget {
@@ -52,6 +57,8 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
   String? _menuError;
   Brand? _lastConfirmedBrand;
   final _commentController = TextEditingController();
+  final _imagePicker = ImagePicker();
+  final List<_SelectedReviewImage> _selectedImages = [];
   bool _isSubmitting = false;
   bool get _isBrandLocked =>
       (widget.brandId?.isNotEmpty ?? false) ||
@@ -199,6 +206,7 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
       _isSubmitting = true;
     });
     try {
+      final imageUrls = await _uploadSelectedImages(auth);
       final repository = ref.read(reviewRepositoryProvider);
       final review = await repository.createReview(
         ReviewCreateRequest(
@@ -209,6 +217,7 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
           scores: _scores,
           overall: overall,
           comment: _commentController.text.trim(),
+          imageUrls: imageUrls,
         ),
         auth: auth,
       );
@@ -235,6 +244,125 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
         });
       }
     }
+  }
+
+  Future<List<String>> _uploadSelectedImages(AuthContext auth) async {
+    if (_selectedImages.isEmpty) return const [];
+    final api = ref.read(reviewApiProvider);
+    final uploadedUrls = <String>[];
+    for (final image in _selectedImages) {
+      final presigned = await api.requestReviewImagePresign(
+        ReviewImagePresignRequest(
+          fileName: image.fileName,
+          contentType: image.contentType,
+        ),
+        auth: auth,
+      );
+      await api.uploadToPresignedUrl(
+        uploadUrl: presigned.uploadUrl,
+        bytes: image.bytes,
+        contentType: image.contentType,
+      );
+      uploadedUrls.add(presigned.fileUrl);
+    }
+    return uploadedUrls;
+  }
+
+  Future<void> _pickImages() async {
+    final remaining = 2 - _selectedImages.length;
+    if (remaining <= 0) {
+      await _showTopToast('사진은 최대 2장까지 첨부할 수 있어요.');
+      return;
+    }
+
+    List<XFile> picked;
+    if (kIsWeb) {
+      final webPicked = await pickWebImages(multiple: remaining > 1);
+      if (webPicked.isEmpty) return;
+      final next = webPicked.take(remaining).map((item) {
+        return _SelectedReviewImage(
+          fileName: item.fileName.isNotEmpty
+              ? item.fileName
+              : 'review_${DateTime.now().millisecondsSinceEpoch}.jpg',
+          contentType: item.mimeType,
+          bytes: item.bytes,
+        );
+      }).toList();
+      if (!mounted) return;
+      setState(() {
+        _selectedImages.addAll(next);
+      });
+      if (webPicked.length > remaining) {
+        await _showTopToast('사진은 최대 2장까지 첨부할 수 있어요.');
+      }
+      return;
+    } else {
+      try {
+        picked = await _imagePicker.pickMultiImage(imageQuality: 85);
+      } catch (_) {
+        // 일부 플랫폼/기기에서는 멀티 선택이 실패할 수 있어 단일 선택으로 폴백한다.
+        final single = await _tryPickSingleImage();
+        if (single == null) return;
+        picked = [single];
+      }
+    }
+    if (picked.isEmpty) return;
+
+    final next = <_SelectedReviewImage>[];
+    for (final file in picked.take(remaining)) {
+      final bytes = await file.readAsBytes();
+      next.add(
+        _SelectedReviewImage(
+          fileName: file.name.isNotEmpty
+              ? file.name
+              : 'review_${DateTime.now().millisecondsSinceEpoch}.jpg',
+          contentType: _contentTypeFromName(file.name),
+          bytes: bytes,
+        ),
+      );
+    }
+    if (!mounted) return;
+    setState(() {
+      _selectedImages.addAll(next);
+    });
+    if (picked.length > remaining) {
+      await _showTopToast('사진은 최대 2장까지 첨부할 수 있어요.');
+    }
+  }
+
+  Future<XFile?> _tryPickSingleImage() async {
+    try {
+      return await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+    } on PlatformException catch (e) {
+      if (e.code == 'photo_access_denied') {
+        await _showTopToast('사진 권한이 꺼져 있어요. 설정에서 허용해주세요.');
+        return null;
+      }
+      await _showTopToast('사진 선택 실패: ${e.message ?? e.code}');
+      return null;
+    } catch (e) {
+      await _showTopToast('사진 선택 실패: $e');
+      return null;
+    }
+  }
+
+  void _removeImageAt(int index) {
+    setState(() {
+      _selectedImages.removeAt(index);
+    });
+  }
+
+  String _contentTypeFromName(String fileName) {
+    final lower = fileName.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    if (lower.endsWith('.gif')) return 'image/gif';
+    if (lower.endsWith('.heic')) return 'image/heic';
+    if (lower.endsWith('.heif')) return 'image/heif';
+    return 'image/jpeg';
   }
 
   double _calculateOverall() {
@@ -550,12 +678,48 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                     isOverall: true,
                     onChanged: (_) {},
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
+                  const Text(
+                    '사진 추가',
+                    style: TextStyle(fontSize: 32 / 2, fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 106,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _selectedImages.length + 1,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return _ReviewImageAddTile(
+                            count: _selectedImages.length,
+                            maxCount: 2,
+                            disabled: _isSubmitting,
+                            onTap: _pickImages,
+                          );
+                        }
+                        final item = _selectedImages[index - 1];
+                        return _ReviewImagePreviewTile(
+                          bytes: item.bytes,
+                          disabled: _isSubmitting,
+                          onRemove: () => _removeImageAt(index - 1),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    '후기를 남겨주세요',
+                    style: TextStyle(fontSize: 32 / 2, fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 12),
                   TextField(
                     controller: _commentController,
-                    maxLines: 4,
+                    maxLines: 6,
                     decoration: InputDecoration(
-                      hintText: '후기를 남겨주세요',
+                      hintText: '이곳에 솔직한 맛 평가를 남겨주세요. 다른 사용자에게 큰 도움이 됩니다.',
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -579,12 +743,6 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  // OutlinedButton.icon(
-                  //   onPressed: () {},
-                  //   icon: const Icon(Icons.add_a_photo),
-                  //   label: const Text('사진 추가'),
-                  // ),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -600,5 +758,159 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
         ),
       ),
     );
+  }
+}
+
+class _SelectedReviewImage {
+  final String fileName;
+  final String contentType;
+  final Uint8List bytes;
+
+  const _SelectedReviewImage({
+    required this.fileName,
+    required this.contentType,
+    required this.bytes,
+  });
+}
+
+class _ReviewImageAddTile extends StatelessWidget {
+  final int count;
+  final int maxCount;
+  final bool disabled;
+  final VoidCallback onTap;
+
+  const _ReviewImageAddTile({
+    required this.count,
+    required this.maxCount,
+    required this.disabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: disabled ? null : onTap,
+      child: CustomPaint(
+        painter: _DashedBorderPainter(
+          color: const Color(0xFFCBD5E1),
+          radius: 14,
+        ),
+        child: Container(
+          width: 106,
+          height: 106,
+          decoration: BoxDecoration(
+            color: const Color(0xFFFCFDFE),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.add_a_photo_outlined,
+                color: Color(0xFF94A3B8),
+                size: 30,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '$count/$maxCount',
+                style: const TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ReviewImagePreviewTile extends StatelessWidget {
+  final Uint8List bytes;
+  final bool disabled;
+  final VoidCallback onRemove;
+
+  const _ReviewImagePreviewTile({
+    required this.bytes,
+    required this.disabled,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 106,
+      height: 106,
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Image.memory(
+              bytes,
+              width: 106,
+              height: 106,
+              fit: BoxFit.cover,
+              gaplessPlayback: true,
+            ),
+          ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: GestureDetector(
+              onTap: disabled ? null : onRemove,
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF1F2937),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, size: 16, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double radius;
+
+  const _DashedBorderPainter({
+    required this.color,
+    required this.radius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(radius),
+    );
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    const dashWidth = 6.0;
+    const dashSpace = 4.0;
+    final path = Path()..addRRect(rect);
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final next = distance + dashWidth;
+        canvas.drawPath(metric.extractPath(distance, next), paint);
+        distance = next + dashSpace;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) {
+    return oldDelegate.color != color || oldDelegate.radius != radius;
   }
 }
