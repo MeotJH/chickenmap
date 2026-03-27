@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from chickenmap.models.entities import BrandMenuAggregate, Brand, Menu, Review, Store
+from chickenmap.models.entities import BrandMenuAggregate, Brand, Menu, Review, Store, User
 
 
 # 브랜드-메뉴 랭킹 관련 데이터 접근 계층이다.
@@ -38,10 +38,11 @@ def fetch_ranking_reviews(db: Session, ranking_id: str):
         return []
 
     stmt = (
-        select(Review, Store.name, Brand.name, Menu.name, Menu.category)
+        select(Review, Store.name, Brand.name, Menu.name, Menu.category, User.email)
         .join(Store, Store.id == Review.store_id)
         .join(Brand, Brand.id == Review.brand_id)
         .join(Menu, Menu.id == Review.menu_id)
+        .join(User, User.id == Review.user_id)
         .where(Review.brand_id == aggregate.brand_id)
         .where(Review.menu_id == aggregate.menu_id)
         .order_by(Review.created_at.desc())

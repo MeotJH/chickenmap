@@ -1,3 +1,6 @@
+import json
+import logging
+
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
@@ -16,6 +19,8 @@ from chickenmap.schemas.chickenmap import (
   BrandOut,
   MenuOut,
   RatingBreakdownOut,
+  ReviewImagePresignIn,
+  ReviewImagePresignOut,
   ReviewOut,
   ReviewCreateIn,
   StoreSummaryOut,
@@ -27,12 +32,14 @@ from chickenmap.services import (
     review_service,
     place_search_service,
     brand_service,
+    upload_service,
 )
 
 
 # 치킨맵 도메인 API 라우터다.
 
 router = APIRouter(prefix="/api/chickenmap", tags=["chickenmap"])
+logger = logging.getLogger(__name__)
 
 
 def _resolve_store_image_url(brand_logo_url: str | None) -> str:
@@ -45,6 +52,20 @@ def _scores_from_snapshot(
 ) -> dict[str, float]:
     # scores_json 스냅샷을 안전하게 역직렬화한다.
     return scores_json_loads(scores_json)
+
+
+def _image_urls_from_snapshot(
+    image_urls_json: str | None,
+) -> list[str]:
+    if not image_urls_json:
+        return []
+    try:
+        parsed = json.loads(image_urls_json)
+    except (TypeError, ValueError):
+        return []
+    if not isinstance(parsed, list):
+        return []
+    return [item.strip() for item in parsed if isinstance(item, str) and item.strip()]
 
 
 def _require_auth_user(
@@ -128,9 +149,11 @@ def get_ranking_reviews(ranking_id: str, db: Session = Depends(get_db)):
             scores=_scores_from_snapshot(review.scores_json),
             overall=review.overall,
             comment=review.comment,
+            userEmail=user_email or "",
+            imageUrls=_image_urls_from_snapshot(review.image_urls_json),
             createdAt=review.created_at,
         )
-        for review, store_name, brand_name, menu_name, menu_category in rows
+        for review, store_name, brand_name, menu_name, menu_category, user_email in rows
     ]
 
 
@@ -204,9 +227,11 @@ def get_store_reviews(store_id: str, db: Session = Depends(get_db)):
             scores=_scores_from_snapshot(review.scores_json),
             overall=review.overall,
             comment=review.comment,
+            userEmail=user_email or "",
+            imageUrls=_image_urls_from_snapshot(review.image_urls_json),
             createdAt=review.created_at,
         )
-        for review, store_name, brand_name, menu_name, menu_category in rows
+        for review, store_name, brand_name, menu_name, menu_category, user_email in rows
     ]
 
 
@@ -227,9 +252,11 @@ def get_my_reviews(
             scores=_scores_from_snapshot(review.scores_json),
             overall=review.overall,
             comment=review.comment,
+            userEmail=user_email or "",
+            imageUrls=_image_urls_from_snapshot(review.image_urls_json),
             createdAt=review.created_at,
         )
-        for review, store_name, brand_name, menu_name, menu_category in rows
+        for review, store_name, brand_name, menu_name, menu_category, user_email in rows
     ]
 
 
@@ -239,7 +266,7 @@ def get_review(review_id: str, db: Session = Depends(get_db)):
     row = review_service.get_review(db, review_id)
     if row is None:
         raise HTTPException(status_code=404, detail="Review not found")
-    review, store_name, brand_name, menu_name, menu_category = row
+    review, store_name, brand_name, menu_name, menu_category, user_email = row
     return ReviewOut(
         id=review.id,
         storeName=store_name,
@@ -249,6 +276,8 @@ def get_review(review_id: str, db: Session = Depends(get_db)):
         scores=_scores_from_snapshot(review.scores_json),
         overall=review.overall,
         comment=review.comment,
+        userEmail=user_email or "",
+        imageUrls=_image_urls_from_snapshot(review.image_urls_json),
         createdAt=review.created_at,
     )
 
@@ -283,8 +312,55 @@ def create_review(
         scores=_scores_from_snapshot(review.scores_json),
         overall=review.overall,
         comment=review.comment,
+        userEmail=user.email or "",
+        imageUrls=_image_urls_from_snapshot(review.image_urls_json),
         createdAt=review.created_at,
     )
+
+
+@router.post("/uploads/review-images/presign", response_model=ReviewImagePresignOut)
+def presign_review_image_upload(
+    payload: ReviewImagePresignIn,
+    auth_user: AuthUser = Depends(_require_auth_user),
+):
+    # 리뷰 이미지 업로드용 presigned URL을 발급한다.
+    logger.info(
+        "Presign request: user_id=%s file_name=%s content_type=%s",
+        auth_user.uid,
+        payload.fileName,
+        payload.contentType,
+    )
+    try:
+        upload_url, file_url = upload_service.issue_review_image_upload_url(
+            user_id=auth_user.uid,
+            file_name=payload.fileName,
+            content_type=payload.contentType,
+        )
+    except ValueError as exc:
+        logger.warning(
+            "Presign rejected: user_id=%s file_name=%s content_type=%s error=%s",
+            auth_user.uid,
+            payload.fileName,
+            payload.contentType,
+            str(exc),
+        )
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception(
+            "Presign failed: user_id=%s file_name=%s content_type=%s error=%s",
+            auth_user.uid,
+            payload.fileName,
+            payload.contentType,
+            str(exc),
+        )
+        raise HTTPException(status_code=500, detail="Failed to issue upload URL") from exc
+    logger.info(
+        "Presign success: user_id=%s file_name=%s file_url=%s",
+        auth_user.uid,
+        payload.fileName,
+        file_url,
+    )
+    return ReviewImagePresignOut(uploadUrl=upload_url, fileUrl=file_url)
 
 
 @router.get("/places/search", response_model=list[PlaceSearchOut])

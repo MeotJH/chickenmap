@@ -53,6 +53,8 @@ class ReviewOut(BaseModel):
     scores: dict[str, float] = Field(default_factory=dict)
     overall: float
     comment: str
+    userEmail: str = ""
+    imageUrls: list[str] = Field(default_factory=list)
     createdAt: datetime
 
 
@@ -93,6 +95,19 @@ class ReviewCreateIn(BaseModel):
     scores: dict[str, float] = Field(default_factory=dict)
     overall: float = 0.0
     comment: str
+    imageUrls: list[str] = Field(default_factory=list)
+
+
+class ReviewImagePresignIn(BaseModel):
+    # 리뷰 이미지 업로드용 presigned URL 요청 모델이다.
+    fileName: str
+    contentType: str = "image/jpeg"
+
+
+class ReviewImagePresignOut(BaseModel):
+    # 리뷰 이미지 업로드용 presigned URL 응답 모델이다.
+    uploadUrl: str
+    fileUrl: str
 
 
 class AuthOut(BaseModel):

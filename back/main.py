@@ -1,13 +1,14 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from chickenmap.api.router import router as chickenmap_router
-from chickenmap.db.init_db import init_db
-from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=Path(__file__).with_name(".env"))
+
+from chickenmap.api.router import router as chickenmap_router
+from chickenmap.db.init_db import init_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

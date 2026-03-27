@@ -27,7 +27,7 @@ def _migrate_scores_json_columns(db: Session):
         return
 
     targets = {
-        "review": ("scores_json", "overall", "user_id"),
+        "review": ("scores_json", "overall", "user_id", "image_urls_json"),
         "brand_menu_aggregate": ("scores_json",),
         "store_aggregate": ("scores_json", "counts_json"),
     }
@@ -51,6 +51,13 @@ def _migrate_scores_json_columns(db: Session):
                     text(
                         f"ALTER TABLE {table_name} "
                         "ADD COLUMN user_id VARCHAR NOT NULL DEFAULT 'user-seed'"
+                    )
+                )
+            elif column_name == "image_urls_json":
+                db.execute(
+                    text(
+                        f"ALTER TABLE {table_name} "
+                        "ADD COLUMN image_urls_json VARCHAR NOT NULL DEFAULT '[]'"
                     )
                 )
             else:

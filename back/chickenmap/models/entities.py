@@ -99,6 +99,7 @@ class Review(Base):
     brand_id: Mapped[str] = mapped_column(ForeignKey("brand.id"), index=True)
     menu_id: Mapped[str] = mapped_column(ForeignKey("menu.id"), index=True)
     scores_json: Mapped[str] = mapped_column(String, default="{}")
+    image_urls_json: Mapped[str] = mapped_column(String, default="[]")
     overall: Mapped[float] = mapped_column(Float)
     comment: Mapped[str] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime)

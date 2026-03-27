@@ -77,6 +77,7 @@ def create_review(db: Session, payload, user_id: str):
     input_scores = getattr(payload, "scores", {}) or {}
     if not input_scores:
         raise ValueError("scores is required")
+    image_urls = _sanitize_image_urls(getattr(payload, "imageUrls", []))
     normalized_scores = normalize_scores(menu_category, input_scores)
     resolved_overall = float(payload.overall) if payload.overall > 0 else compute_overall(normalized_scores, fallback=0.0)
 
@@ -87,6 +88,7 @@ def create_review(db: Session, payload, user_id: str):
         brand_id=brand.id,
         menu_id=menu.id,
         scores_json=scores_json_dumps(normalized_scores),
+        image_urls_json=json.dumps(image_urls, ensure_ascii=False),
         overall=resolved_overall,
         comment=payload.comment,
         created_at=datetime.now(),
@@ -310,3 +312,15 @@ def _classify_menu_category(normalized_name: str) -> str:
     if "숯불" in normalized_name or "바베큐" in normalized_name or "구이" in normalized_name:
         return "구이"
     return "기타"
+
+
+def _sanitize_image_urls(image_urls: list[str]) -> list[str]:
+    if not image_urls:
+        return []
+    cleaned = [url.strip() for url in image_urls if isinstance(url, str) and url.strip()]
+    if len(cleaned) > 2:
+        raise ValueError("At most 2 images can be attached")
+    for url in cleaned:
+        if not (url.startswith("http://") or url.startswith("https://")):
+            raise ValueError("Invalid image URL")
+    return cleaned

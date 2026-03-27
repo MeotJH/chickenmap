@@ -16,3 +16,10 @@ def _default_sqlite_url() -> str:
 
 
 DB_URL = os.getenv("CHICKENMAP_DB_URL", _default_sqlite_url())
+
+AWS_REGION = os.getenv("AWS_REGION", "ap-northeast-2")
+S3_BUCKET = os.getenv("S3_BUCKET", "")
+S3_REVIEW_IMAGE_PREFIX = os.getenv("S3_REVIEW_IMAGE_PREFIX", "review-images")
+S3_PRESIGNED_EXPIRES_SECONDS = int(os.getenv("S3_PRESIGNED_EXPIRES_SECONDS", "600"))
+S3_PUBLIC_BASE_URL = os.getenv("S3_PUBLIC_BASE_URL", "")
+S3_ENDPOINT_URL = os.getenv("S3_ENDPOINT_URL", f"https://s3.{AWS_REGION}.amazonaws.com")
