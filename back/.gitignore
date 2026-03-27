@@ -14,7 +14,9 @@ node_modules
 package-lock.json
 package.json
 /data/*.db
+/data/*.db.localbak_*
 ./painting-diary-key.json
 
 painting-diary-key.json
 /data/*.db.bak_*
+generated/
