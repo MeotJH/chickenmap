@@ -40,6 +40,10 @@ Future<void> _loadEnv() async {
   // 기본값(.env.production)을 먼저 읽고, 로컬(.env)로 덮어쓴다.
   await dotenv.load(fileName: '.env.production', isOptional: true);
   await dotenv.load(fileName: '.env', isOptional: true, mergeWith: dotenv.env);
+  final apiBaseUrl = dotenv.env['API_BASE_URL'];
+  if (kDebugMode && apiBaseUrl != null && apiBaseUrl.contains('.nip.io')) {
+    dotenv.env['API_BASE_URL'] = 'http://localhost:8080';
+  }
   debugPrint(
     'Env loaded: API_BASE_URL=${dotenv.env['API_BASE_URL']}, '
     'NAVER_MAP_CLIENT_ID=${dotenv.env['NAVER_MAP_CLIENT_ID']?.isNotEmpty == true ? 'set' : 'missing'}',

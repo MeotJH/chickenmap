@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Defaults (override via env vars if needed)
-BACKEND_HOST="${BACKEND_HOST:-3.36.208.227}"
+BACKEND_HOST="${BACKEND_HOST:-13.124.77.254}"
 BACKEND_USER="${BACKEND_USER:-ec2-user}"
 SSH_KEY_PATH="${SSH_KEY_PATH:-$ROOT_DIR/LightsailDefaultKey-ap-northeast-2.pem}"
 BACKEND_REMOTE_DIR="${BACKEND_REMOTE_DIR:-/home/ec2-user/chickenmap-back}"
